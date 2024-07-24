@@ -13,7 +13,7 @@
         android:theme="@style/Theme.ArgamosaKuaMP"
         tools:targetApi="31">
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.LoginActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.ArgamosaKuaMP">
@@ -23,6 +23,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".activities.SignUpActivity"
+            android:exported="false"/>
+
     </application>
 
 </manifest>
