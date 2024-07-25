@@ -17,7 +17,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <EditText
-            android:id="@+id/etItemName"
+            android:id="@+id/etEditItemName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Item Name"
@@ -25,7 +25,7 @@
             android:textSize="16sp" />
 
         <TextView
-            android:id="@+id/tvCharacterCount"
+            android:id="@+id/tvEditCharacterCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
@@ -40,7 +40,7 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/btnDecrease"
+                android:id="@+id/btnEditDecrease"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -48,7 +48,7 @@
                 android:textSize="24sp" />
 
             <TextView
-                android:id="@+id/tvQuantity"
+                android:id="@+id/tvEditQuantity"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="16dp"
@@ -56,7 +56,7 @@
                 android:textSize="24sp" />
 
             <Button
-                android:id="@+id/btnIncrease"
+                android:id="@+id/btnEditIncrease"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -65,7 +65,7 @@
         </LinearLayout>
 
         <ImageView
-            android:id="@+id/ivBarcodeSample"
+            android:id="@+id/ivEditBarcodeSample"
             android:layout_width="match_parent"
             android:layout_height="75dp"
             android:layout_marginTop="16dp"
@@ -74,11 +74,11 @@
             android:src="@drawable/barcode_sample" />
 
         <Button
-            android:id="@+id/btnUploadImage"
+            android:id="@+id/btnEditImage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Take Image" />
+            android:text="Change Image" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -87,7 +87,7 @@
             android:orientation="horizontal">
 
             <Button
-                android:id="@+id/btnCancel"
+                android:id="@+id/btnEditCancel"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
@@ -95,12 +95,12 @@
                 android:text="Cancel" />
 
             <Button
-                android:id="@+id/btnAddEntry"
+                android:id="@+id/btnEditEntry"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_weight="1"
-                android:text="Add" />
+                android:text="Save" />
 
         </LinearLayout>
 

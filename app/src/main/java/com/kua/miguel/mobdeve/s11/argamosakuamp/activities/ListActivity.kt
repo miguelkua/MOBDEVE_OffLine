@@ -18,6 +18,7 @@ import com.kua.miguel.mobdeve.s11.argamosakuamp.R
 import com.kua.miguel.mobdeve.s11.argamosakuamp.adapters.ListAdapter
 import com.kua.miguel.mobdeve.s11.argamosakuamp.databinding.ActivityListBinding
 import com.kua.miguel.mobdeve.s11.argamosakuamp.dialogs.AddEntryDialogFragment
+import com.kua.miguel.mobdeve.s11.argamosakuamp.dialogs.EditEntryDialogFragment
 import com.kua.miguel.mobdeve.s11.argamosakuamp.helpers.SwipeHelper
 import com.kua.miguel.mobdeve.s11.argamosakuamp.models.EntryModel
 
@@ -146,15 +147,19 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
             android.R.color.holo_orange_light,
             object : SwipeHelper.UnderlayButtonClickListener {
                 override fun onClick() {
-                    // Show Toast message for edit button click
-                    Toast.makeText(this@ListActivity, "Edit button clicked", Toast.LENGTH_SHORT).show()
-
                     val entryId = data[position].documentId
                     Log.d("ListActivity", "Edit button clicked for entry ID: $entryId")
+
+                    // Create a new instance of the dialog fragment
+                    val editEntryDialogFragment = EditEntryDialogFragment.newInstance(entryId)
+
+                    // Show the dialog fragment
+                    editEntryDialogFragment.show(supportFragmentManager, "EditEntryDialogFragment")
                 }
             }
         )
     }
+
 
     private fun deleteButton(position: Int): SwipeHelper.UnderlayButton {
         return SwipeHelper.UnderlayButton(
@@ -166,7 +171,6 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
                 override fun onClick() {
 //                    val entryId = data[position].documentId
 //                    Log.d("ListActivity", "Delete button clicked for entry ID: $entryId")
-
                     showDeleteConfirmationDialog(position)
                 }
             }
