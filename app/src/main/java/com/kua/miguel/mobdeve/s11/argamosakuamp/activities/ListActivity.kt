@@ -1,11 +1,14 @@
 package com.kua.miguel.mobdeve.s11.argamosakuamp.activities
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
@@ -15,6 +18,7 @@ import com.kua.miguel.mobdeve.s11.argamosakuamp.R
 import com.kua.miguel.mobdeve.s11.argamosakuamp.adapters.ListAdapter
 import com.kua.miguel.mobdeve.s11.argamosakuamp.databinding.ActivityListBinding
 import com.kua.miguel.mobdeve.s11.argamosakuamp.dialogs.AddEntryDialogFragment
+import com.kua.miguel.mobdeve.s11.argamosakuamp.helpers.SwipeHelper
 import com.kua.miguel.mobdeve.s11.argamosakuamp.models.EntryModel
 
 class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListener {
@@ -41,6 +45,17 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
         listAdapter = ListAdapter(data)
         recyclerView.adapter = listAdapter
 
+        val itemTouchHelper = ItemTouchHelper(object : SwipeHelper(recyclerView) {
+            override fun instantiateUnderlayButton(position: Int): List<UnderlayButton> {
+                return listOf(
+                    deleteButton(position),
+                    editButton(position)
+                )
+            }
+        })
+        itemTouchHelper.attachToRecyclerView(recyclerView)
+
+
         val btnTestLogout: Button = viewBinding.root.findViewById(R.id.btnTestLogout)
         btnTestLogout.setOnClickListener {
             testLogout()
@@ -53,6 +68,12 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
 
         // Load entries from Firestore
         loadEntries()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Unregister the Firestore listener when activity is destroyed
+        listenerRegistration?.remove()
     }
 
     private fun loadEntries() {
@@ -73,6 +94,7 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
                             val quantity = document.getLong("quantity")?.toInt() ?: 0
                             val imageUri = document.getString("imageUri")
                             val entry = EntryModel(
+                                documentId = document.id,
                                 productPicture = imageUri,
                                 productQuantity = quantity,
                                 productName = itemName
@@ -84,6 +106,7 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
                 }
         }
     }
+
 
     private fun showAddEntryDialog() {
         val dialog = AddEntryDialogFragment()
@@ -115,6 +138,84 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
         }
     }
 
+    private fun editButton(position: Int): SwipeHelper.UnderlayButton {
+        return SwipeHelper.UnderlayButton(
+            this,
+            R.drawable.edit, // Use drawable resource ID
+            14.0f,
+            android.R.color.holo_orange_light,
+            object : SwipeHelper.UnderlayButtonClickListener {
+                override fun onClick() {
+                    // Show Toast message for edit button click
+                    Toast.makeText(this@ListActivity, "Edit button clicked", Toast.LENGTH_SHORT).show()
+
+                    val entryId = data[position].documentId
+                    Log.d("ListActivity", "Edit button clicked for entry ID: $entryId")
+                }
+            }
+        )
+    }
+
+    private fun deleteButton(position: Int): SwipeHelper.UnderlayButton {
+        return SwipeHelper.UnderlayButton(
+            this,
+            R.drawable.delete, // Use drawable resource ID
+            14.0f,
+            android.R.color.holo_red_light,
+            object : SwipeHelper.UnderlayButtonClickListener {
+                override fun onClick() {
+//                    val entryId = data[position].documentId
+//                    Log.d("ListActivity", "Delete button clicked for entry ID: $entryId")
+
+                    showDeleteConfirmationDialog(position)
+                }
+            }
+        )
+    }
+
+    private fun showDeleteConfirmationDialog(position: Int) {
+        val itemName = data[position].productName // Assuming 'productName' is the property in your data class
+        val entryId = data[position].documentId
+
+        AlertDialog.Builder(this)
+            .setTitle("Confirm Delete")
+            .setMessage("Are you sure you want to delete $itemName?")
+            .setPositiveButton("Yes") { _, _ ->
+                // Remove the item from the local list and notify the adapter
+                data.removeAt(position)
+                listAdapter.notifyItemRemoved(position)
+
+                Toast.makeText(this@ListActivity, "$itemName deleted", Toast.LENGTH_SHORT).show()
+
+                deleteItemFromFirestore(entryId)
+            }
+            .setNegativeButton("No") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+    private fun deleteItemFromFirestore(entryId: String) {
+        val firestore = FirebaseFirestore.getInstance()
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+
+        if (userId != null) {
+            firestore.collection("users")
+                .document(userId)
+                .collection("currentList")
+                .document(entryId)
+                .delete()
+                .addOnSuccessListener {
+                    Log.d("ListActivity", "DocumentSnapshot successfully deleted!")
+                }
+                .addOnFailureListener { e ->
+                    Log.w("ListActivity", "Error deleting document", e)
+                    Toast.makeText(this, "Failed to delete item from Firebase", Toast.LENGTH_SHORT).show()
+                }
+        }
+    }
+
+
     private fun testLogout() {
         auth.signOut()
         Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show()
@@ -129,12 +230,6 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
         val intent = Intent(this, LoginActivity::class.java)
         startActivity(intent)
         finish()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        // Unregister the Firestore listener when activity is destroyed
-        listenerRegistration?.remove()
     }
 }
 
