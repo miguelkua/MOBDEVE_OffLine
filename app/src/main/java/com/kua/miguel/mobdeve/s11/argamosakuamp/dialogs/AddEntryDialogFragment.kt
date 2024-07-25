@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,8 +20,7 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.firestore.FirebaseFirestore
 import com.kua.miguel.mobdeve.s11.argamosakuamp.R
 import com.kua.miguel.mobdeve.s11.argamosakuamp.databinding.DialogAddEntryBinding
 import com.yalantis.ucrop.UCrop
@@ -36,8 +36,8 @@ class AddEntryDialogFragment : DialogFragment() {
     private var imageUri: Uri? = null
     private var croppedImageUri: Uri? = null
 
-    private val database: DatabaseReference by lazy {
-        FirebaseDatabase.getInstance().reference
+    private val firestore: FirebaseFirestore by lazy {
+        FirebaseFirestore.getInstance()
     }
     private val auth: FirebaseAuth by lazy {
         FirebaseAuth.getInstance()
@@ -165,7 +165,7 @@ class AddEntryDialogFragment : DialogFragment() {
         val uniqueFileName = "cropped_image_${System.currentTimeMillis()}.jpg"
         val destinationUri = Uri.fromFile(File(requireContext().cacheDir, uniqueFileName))
         val options = UCrop.Options().apply {
-            setCompressionQuality(80) // Set compression quality
+            setCompressionQuality(100)
         }
 
         UCrop.of(sourceUri, destinationUri)
@@ -195,25 +195,37 @@ class AddEntryDialogFragment : DialogFragment() {
     private fun saveEntryToFirebase(itemName: String, quantity: Int, imageUri: Uri?) {
         val userId = auth.currentUser?.uid
         if (userId != null) {
-            val entryId = database.child("users").child(userId).child("entries").push().key
-            if (entryId != null) {
-                val entry = mapOf(
-                    "itemName" to itemName,
-                    "quantity" to quantity,
-                    "imageUri" to imageUri?.toString()
-                )
-                database.child("users").child(userId).child("entries").child(entryId).setValue(entry)
-                    .addOnSuccessListener {
+            val entryId = firestore.collection("users").document(userId).collection("currentList").document().id
+            val entry = mapOf(
+                "itemName" to itemName,
+                "quantity" to quantity,
+                "imageUri" to imageUri?.toString()
+            )
+
+            Log.d("FirebaseDebug", "Attempting to save entry with ID: $entryId, data: $entry")
+
+            firestore.collection("users").document(userId).collection("currentList").document(entryId).set(entry)
+                .addOnSuccessListener {
+                    Log.d("FirebaseDebug", "Successfully added entry with ID: $entryId")
+                    if (context != null) {
                         Toast.makeText(context, "Entry added successfully", Toast.LENGTH_SHORT).show()
                     }
-                    .addOnFailureListener {
-                        Toast.makeText(context, "Failed to add entry: ${it.message}", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener { exception ->
+                    Log.e("FirebaseError", "Failed to add entry with ID: $entryId", exception)
+                    if (context != null) {
+                        Toast.makeText(context, "Failed to add entry: ${exception.message}", Toast.LENGTH_SHORT).show()
                     }
-            }
+                }
         } else {
-            Toast.makeText(context, "User not logged in", Toast.LENGTH_SHORT).show()
+            Log.w("FirebaseWarning", "User is not logged in")
+            if (context != null) {
+                Toast.makeText(context, "User not logged in", Toast.LENGTH_SHORT).show()
+            }
         }
     }
+
+
 
     private fun resetDialog() {
         binding.etItemName.text.clear()
@@ -245,7 +257,7 @@ class AddEntryDialogFragment : DialogFragment() {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 dispatchTakePictureIntent()
             } else {
-                Toast.makeText(context, "Camera permission is required to take a picture", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Camera permission required to capture image", Toast.LENGTH_SHORT).show()
             }
         }
     }

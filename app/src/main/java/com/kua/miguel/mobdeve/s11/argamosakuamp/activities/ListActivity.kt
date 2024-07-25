@@ -9,6 +9,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import com.kua.miguel.mobdeve.s11.argamosakuamp.R
 import com.kua.miguel.mobdeve.s11.argamosakuamp.adapters.ListAdapter
 import com.kua.miguel.mobdeve.s11.argamosakuamp.databinding.ActivityListBinding
@@ -22,6 +24,8 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
     private lateinit var listAdapter: ListAdapter
     private lateinit var viewBinding: ActivityListBinding
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private var listenerRegistration: ListenerRegistration? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,11 +36,7 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
         recyclerView = viewBinding.recyclerViewItems
         recyclerView.layoutManager = LinearLayoutManager(this)
 
-        data = arrayListOf(
-            EntryModel(R.drawable.ic_launcher_background, 10, "Item 1"),
-            EntryModel(R.drawable.ic_launcher_background, 5, "Item 2"),
-            EntryModel(R.drawable.ic_launcher_background, 20, "Item 3")
-        )
+        data = arrayListOf()
 
         listAdapter = ListAdapter(data)
         recyclerView.adapter = listAdapter
@@ -50,6 +50,39 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
         btnAddEntry.setOnClickListener {
             showAddEntryDialog()
         }
+
+        // Load entries from Firestore
+        loadEntries()
+    }
+
+    private fun loadEntries() {
+        val userId = auth.currentUser?.uid
+        if (userId != null) {
+            listenerRegistration = firestore.collection("users").document(userId)
+                .collection("currentList")
+                .addSnapshotListener { snapshot, e ->
+                    if (e != null) {
+                        Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                        return@addSnapshotListener
+                    }
+
+                    if (snapshot != null) {
+                        data.clear()
+                        for (document in snapshot.documents) {
+                            val itemName = document.getString("itemName") ?: ""
+                            val quantity = document.getLong("quantity")?.toInt() ?: 0
+                            val imageUri = document.getString("imageUri")
+                            val entry = EntryModel(
+                                productPicture = imageUri,
+                                productQuantity = quantity,
+                                productName = itemName
+                            )
+                            data.add(entry)
+                        }
+                        listAdapter.notifyDataSetChanged()
+                    }
+                }
+        }
     }
 
     private fun showAddEntryDialog() {
@@ -62,8 +95,25 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
         // Handle the addition of the new entry here
         val imageUriString = imageUri?.toString() // Convert URI to String if needed
         Toast.makeText(this, "Added: $itemName, Quantity: $quantity, Image URI: $imageUriString", Toast.LENGTH_SHORT).show()
-    }
 
+        // Save the new entry to Firestore
+        val userId = auth.currentUser?.uid
+        if (userId != null) {
+            val entryId = firestore.collection("users").document(userId).collection("currentList").document().id
+            val entry = hashMapOf(
+                "itemName" to itemName,
+                "quantity" to quantity,
+                "imageUri" to imageUriString
+            )
+            firestore.collection("users").document(userId).collection("currentList").document(entryId).set(entry)
+                .addOnSuccessListener {
+                    // Entry added successfully
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Failed to add entry: ${it.message}", Toast.LENGTH_SHORT).show()
+                }
+        }
+    }
 
     private fun testLogout() {
         auth.signOut()
@@ -80,4 +130,11 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
         startActivity(intent)
         finish()
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Unregister the Firestore listener when activity is destroyed
+        listenerRegistration?.remove()
+    }
 }
+
