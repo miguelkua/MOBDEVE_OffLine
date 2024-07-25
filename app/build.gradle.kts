@@ -70,6 +70,13 @@ dependencies {
 
     implementation("com.google.android.material:material:1.9.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation ("com.github.yalantis:ucrop:2.2.8")
+    implementation ("androidx.exifinterface:exifinterface:1.3.3")
+
+    implementation(libs.firebase.storage)
+    implementation(libs.androidx.cardview)
+    implementation(libs.androidx.camera.core)
+    implementation(libs.firebase.database.ktx)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -1,6 +1,7 @@
 package com.kua.miguel.mobdeve.s11.argamosakuamp.activities
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
@@ -11,9 +12,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.kua.miguel.mobdeve.s11.argamosakuamp.R
 import com.kua.miguel.mobdeve.s11.argamosakuamp.adapters.ListAdapter
 import com.kua.miguel.mobdeve.s11.argamosakuamp.databinding.ActivityListBinding
+import com.kua.miguel.mobdeve.s11.argamosakuamp.dialogs.AddEntryDialogFragment
 import com.kua.miguel.mobdeve.s11.argamosakuamp.models.EntryModel
 
-class ListActivity : AppCompatActivity() {
+class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListener {
 
     private lateinit var data: ArrayList<EntryModel>
     private lateinit var recyclerView: RecyclerView
@@ -43,7 +45,25 @@ class ListActivity : AppCompatActivity() {
         btnTestLogout.setOnClickListener {
             testLogout()
         }
+
+        val btnAddEntry: Button = viewBinding.root.findViewById(R.id.btnAddEntry)
+        btnAddEntry.setOnClickListener {
+            showAddEntryDialog()
+        }
     }
+
+    private fun showAddEntryDialog() {
+        val dialog = AddEntryDialogFragment()
+        dialog.setAddEntryListener(this)
+        dialog.show(supportFragmentManager, "AddEntryDialog")
+    }
+
+    override fun onAddEntry(itemName: String, quantity: Int, imageUri: Uri?) {
+        // Handle the addition of the new entry here
+        val imageUriString = imageUri?.toString() // Convert URI to String if needed
+        Toast.makeText(this, "Added: $itemName, Quantity: $quantity, Image URI: $imageUriString", Toast.LENGTH_SHORT).show()
+    }
+
 
     private fun testLogout() {
         auth.signOut()
