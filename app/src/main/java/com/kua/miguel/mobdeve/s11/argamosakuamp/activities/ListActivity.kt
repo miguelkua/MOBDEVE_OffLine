@@ -35,17 +35,18 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Initialize ViewBinding
         viewBinding = ActivityListBinding.inflate(layoutInflater)
         setContentView(viewBinding.root)
 
+        // Setup RecyclerView
         recyclerView = viewBinding.recyclerViewItems
         recyclerView.layoutManager = LinearLayoutManager(this)
-
         data = arrayListOf()
-
         listAdapter = ListAdapter(data)
         recyclerView.adapter = listAdapter
 
+        // Setup ItemTouchHelper for swipe actions
         val itemTouchHelper = ItemTouchHelper(object : SwipeHelper(recyclerView) {
             override fun instantiateUnderlayButton(position: Int): List<UnderlayButton> {
                 return listOf(
@@ -56,20 +57,22 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
         })
         itemTouchHelper.attachToRecyclerView(recyclerView)
 
-
-        val btnTestLogout: Button = viewBinding.root.findViewById(R.id.btnTestLogout)
-        btnTestLogout.setOnClickListener {
+        viewBinding.btnTestLogout.setOnClickListener {
             testLogout()
         }
 
-        val btnAddEntry: Button = viewBinding.root.findViewById(R.id.btnAddEntry)
-        btnAddEntry.setOnClickListener {
+        viewBinding.btnAddEntry.setOnClickListener {
             showAddEntryDialog()
+        }
+
+        viewBinding.btnCart.setOnClickListener {
+            navigateToCart()
         }
 
         // Load entries from Firestore
         loadEntries()
     }
+
 
     override fun onDestroy() {
         super.onDestroy()
@@ -217,6 +220,11 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
                     Toast.makeText(this, "Failed to delete item from Firebase", Toast.LENGTH_SHORT).show()
                 }
         }
+    }
+
+    private fun navigateToCart() {
+        val intent = Intent(this, CartActivity::class.java)
+        startActivity(intent)
     }
 
 
