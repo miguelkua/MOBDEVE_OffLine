@@ -56,6 +56,16 @@
             android:screenOrientation="portrait"/>
 
         <activity
+            android:name=".activities.HistoryListActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"/>
+
+        <activity
+            android:name=".activities.HistoryEntryActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"/>
+
+        <activity
             android:name="com.yalantis.ucrop.UCropActivity"
             android:screenOrientation="portrait"/>
 

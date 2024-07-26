@@ -69,6 +69,10 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
             navigateToCart()
         }
 
+        viewBinding.btnCheckHistory.setOnClickListener {
+            navigateToHistory()
+        }
+
         // Load entries from Firestore
         loadEntries()
     }
@@ -224,6 +228,11 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
 
     private fun navigateToCart() {
         val intent = Intent(this, CartActivity::class.java)
+        startActivity(intent)
+    }
+
+    private fun navigateToHistory() {
+        val intent = Intent(this, HistoryListActivity::class.java)
         startActivity(intent)
     }
 

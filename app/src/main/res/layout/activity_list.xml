@@ -62,15 +62,6 @@
             android:textSize="12sp" />
 
         <Button
-            android:id="@+id/btnSettings"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Settings"
-            android:textColor="@android:color/black"
-            android:textSize="12sp" />
-
-        <Button
             android:id="@+id/btnList"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

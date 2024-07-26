@@ -51,6 +51,10 @@ class CartActivity : AppCompatActivity() {
         viewBinding.btnList.setOnClickListener {
             navigateToList()
         }
+
+        viewBinding.btnCheckHistory.setOnClickListener {
+            navigateToHistory()
+        }
     }
 
     override fun onDestroy() {
@@ -99,6 +103,12 @@ class CartActivity : AppCompatActivity() {
         val intent = Intent(this, ListActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
+    }
+
+    private fun navigateToHistory() {
+        val intent = Intent(this, HistoryListActivity::class.java)
+        startActivity(intent)
+        finish()
     }
 
     private fun navigateToCheckout() {

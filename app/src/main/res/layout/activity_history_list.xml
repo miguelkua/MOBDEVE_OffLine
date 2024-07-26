@@ -1,59 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/tvHeader"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_marginTop="49dp"
-        android:layout_marginBottom="4dp"
-        android:background="#F5F5F5"
-        android:gravity="center_vertical"
-        android:padding="8dp"
-        android:text="Quantity                                   Name"
-        android:textColor="@android:color/black"
-        android:textSize="16sp" />
-
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewCart"
+        android:id="@+id/recyclerViewHistory"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_below="@id/tvHeader"
-        android:layout_above="@id/llTotalItems"/>
-
-    <TextView
-        android:id="@+id/llTotalItems"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/llBottomButtons"
-        android:layout_alignParentStart="true"
-        android:layout_marginStart="0dp"
-        android:layout_marginBottom="88dp"
-        android:background="#FFFFFF"
-        android:gravity="center_vertical"
-        android:padding="8dp"
-        android:text="______________________________________________________\n\nTotal Items: X"
-        android:textColor="@android:color/black"
-        android:textSize="16sp" />
-
-    <Button
-        android:id="@+id/btnCheckout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginEnd="13dp"
-        android:layout_marginBottom="114dp"
-        android:background="@color/purple_700"
-        android:elevation="4dp"
-        android:padding="8dp"
-        android:text="Checkout"
-        android:textColor="@android:color/white"
-        android:textSize="14sp" />
+        android:layout_height="match_parent"
+        android:layout_above="@+id/llBottomButtons"
+        android:padding="16dp" />
 
     <LinearLayout
         android:id="@+id/llBottomButtons"
