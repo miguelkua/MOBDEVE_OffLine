@@ -1,13 +1,14 @@
 package com.kua.miguel.mobdeve.s11.argamosakuamp.activities
 
 import android.content.Intent
-import android.icu.text.SimpleDateFormat
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.kua.miguel.mobdeve.s11.argamosakuamp.databinding.ActivitySignupBinding
+import java.text.SimpleDateFormat
 import java.util.Locale
 
 class SignUpActivity : ComponentActivity() {
@@ -26,6 +27,10 @@ class SignUpActivity : ComponentActivity() {
         firestore = FirebaseFirestore.getInstance()
 
         viewBinding.tvLoginLink.setOnClickListener {
+            navigateBackToLogin()
+        }
+
+        viewBinding.ivBackArrow.setOnClickListener {
             navigateBackToLogin()
         }
 
