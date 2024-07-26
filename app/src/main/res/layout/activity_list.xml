@@ -6,41 +6,43 @@
         android:id="@+id/recyclerViewItems"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="8dp"
+        android:layout_above="@+id/llBottomButtons"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="0dp"
+        android:layout_marginBottom="1dp"
+        android:background="#FFFEED"
         android:clipToPadding="false"
-        android:scrollbars="vertical"
-        android:background="#FFFFFF"
-        android:layout_above="@+id/llBottomButtons" />
+        android:padding="8dp"
+        android:scrollbars="vertical" />
 
     <Button
         android:id="@+id/btnTestLogout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="280dp"
+        android:layout_marginBottom="91dp"
+        android:background="@color/purple_700"
+        android:elevation="4dp"
+        android:padding="8dp"
         android:text="Test Logout"
-        android:background="@color/purple_700"
         android:textColor="@android:color/white"
-        android:textSize="14sp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginBottom="136dp"
-    android:layout_marginEnd="16dp"
-    android:elevation="4dp"
-    android:padding="8dp" />
+        android:textSize="14sp" />
 
-    <Button
+    <ImageButton
         android:id="@+id/btnAddEntry"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Add Entry"
-        android:background="@color/purple_700"
-        android:textColor="@android:color/white"
-        android:textSize="14sp"
-        android:layout_alignParentBottom="true"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
         android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="16dp"
         android:layout_marginBottom="80dp"
-    android:layout_marginEnd="16dp"
-    android:elevation="4dp"
-    android:padding="8dp" />
+        android:background="@drawable/ic_add_entry"
+        android:contentDescription="Add Entry"
+        android:elevation="4dp"
+        android:padding="8dp" />
+
 
     <LinearLayout
         android:id="@+id/llBottomButtons"
@@ -52,41 +54,49 @@
         android:background="#F5F5F5"
         android:layout_alignParentBottom="true">
 
-        <Button
+        <ImageButton
             android:id="@+id/btnCheckHistory"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="History of Records"
-            android:textColor="@android:color/black"
-            android:textSize="12sp" />
+            android:src="@drawable/ic_clock"
+            android:contentDescription="History of Records"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="centerInside"
+            android:padding="8dp" />
 
-        <Button
+        <ImageButton
             android:id="@+id/btnList"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="List"
-            android:textColor="@android:color/black"
-            android:textSize="12sp" />
+            android:src="@drawable/ic_list_filled"
+            android:contentDescription="List"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="centerInside"
+            android:padding="8dp" />
 
-        <Button
+        <ImageButton
             android:id="@+id/btnCart"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Checkout"
-            android:textColor="@android:color/black"
-            android:textSize="12sp" />
+            android:src="@drawable/ic_cart"
+            android:contentDescription="Checkout"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="centerInside"
+            android:padding="8dp" />
 
-        <Button
+        <ImageButton
             android:id="@+id/btnProfile"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Profile"
-            android:textColor="@android:color/black"
-            android:textSize="12sp" />
+            android:src="@drawable/ic_user"
+            android:contentDescription="Profile"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="centerInside"
+            android:padding="8dp" />
 
     </LinearLayout>
 </RelativeLayout>

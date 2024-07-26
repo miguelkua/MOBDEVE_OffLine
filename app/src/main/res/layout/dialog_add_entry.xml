@@ -8,7 +8,8 @@
     <LinearLayout
         android:id="@+id/linearLayoutContainer"
         android:layout_width="322dp"
-        android:layout_height="411dp"
+        android:layout_height="475dp"
+        android:background="#FFFEED"
         android:orientation="vertical"
         android:padding="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -16,13 +17,27 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+        <TextView
+            android:id="@+id/tvAddEntryTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="16dp"
+            android:text="Add Entry"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
         <EditText
             android:id="@+id/etItemName"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="50dp"
+            android:background="@drawable/rounded_edittext"
+            android:gravity="start|center_vertical"
             android:hint="Item Name"
             android:maxLength="25"
+            android:paddingStart="20dp"
             android:textSize="16sp" />
+
 
         <TextView
             android:id="@+id/tvCharacterCount"
@@ -44,7 +59,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:background="@android:color/transparent"
                 android:text="-"
+                android:textColor="#FF0000"
                 android:textSize="24sp" />
 
             <TextView
@@ -60,7 +77,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:background="@android:color/transparent"
                 android:text="+"
+                android:textColor="#00FF00"
                 android:textSize="24sp" />
         </LinearLayout>
 
@@ -73,12 +92,16 @@
             android:scaleType="centerCrop"
             android:src="@drawable/barcode_sample" />
 
-        <Button
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/btnUploadImage"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
             android:layout_marginTop="16dp"
-            android:text="Take Image" />
+            android:contentDescription="Take Image"
+            android:elevation="4dp"
+            android:src="@drawable/ic_camera"
+            app:backgroundTint="#8BC34A" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -92,7 +115,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1"
-                android:text="Cancel" />
+                android:text="Cancel"
+                app:backgroundTint="#8BC34A" />
 
             <Button
                 android:id="@+id/btnAddEntry"
@@ -100,7 +124,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_weight="1"
-                android:text="Add" />
+                android:text="Add"
+                app:backgroundTint="#8BC34A" />
 
         </LinearLayout>
 

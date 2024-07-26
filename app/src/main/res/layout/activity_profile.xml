@@ -1,0 +1,107 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#FFFEED"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/tvProfileTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Profile"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="16dp" />
+
+
+    <Button
+        android:id="@+id/btnEditProfile"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvProfileContact"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="101dp"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="#FFA500"
+        android:padding="8dp"
+        android:text="Edit Profile Details"
+        android:textColor="#FFFFFF" />
+
+    <TextView
+        android:id="@+id/tvProfileName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="18dp"
+        android:layout_marginTop="16dp"
+        android:text="Miguel Carlo F. Kua"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvProfileBirthdayLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvProfileName"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:text="Birthday:"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/tvProfileBirthday"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvProfileName"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_toEndOf="@+id/tvProfileBirthdayLabel"
+        android:text="August 19, 2003"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/tvProfileEmailLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvProfileBirthdayLabel"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:text="Email:"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/tvProfileEmail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvProfileBirthday"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_toEndOf="@+id/tvProfileEmailLabel"
+        android:text="chipmunkfun101@xyz.com"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/tvProfileContactLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvProfileEmailLabel"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="7dp"
+        android:text="Contact No.:"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/tvProfileContact"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvProfileEmail"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="7dp"
+        android:layout_toEndOf="@+id/tvProfileContactLabel"
+        android:text="09566332471"
+        android:textSize="16sp" />
+
+</RelativeLayout>
