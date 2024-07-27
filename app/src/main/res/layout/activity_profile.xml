@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -55,33 +56,14 @@
                     android:textSize="20sp"
                     android:textStyle="bold" />
 
-                <LinearLayout
+                <TextView
+                    android:id="@+id/tvProfileName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <EditText
-                        android:id="@+id/etProfileName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="4dp"
-                        android:enabled="true"
-                        android:hint="Enter Details"
-                        android:maxLength="35"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp" />
-
-                    <ImageButton
-                        android:id="@+id/btnEditName"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:contentDescription="Edit Name"
-                        android:padding="6dp"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/ic_edit_black" />
-                </LinearLayout>
+                    android:layout_marginEnd="4dp"
+                    android:textColor="@android:color/black"
+                    android:textSize="16sp"
+                    android:text="name" />
             </LinearLayout>
 
             <!-- Birthday Row -->
@@ -99,33 +81,14 @@
                     android:textSize="20sp"
                     android:textStyle="bold" />
 
-                <LinearLayout
+                <TextView
+                    android:id="@+id/tvProfileBirthday"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <EditText
-                        android:id="@+id/etProfileBirthday"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="4dp"
-                        android:enabled="true"
-                        android:hint="Enter Details"
-                        android:inputType="datetime|date"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp" />
-
-                    <ImageButton
-                        android:id="@+id/btnEditBirthday"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:contentDescription="Edit Birthday"
-                        android:padding="6dp"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/ic_edit_black" />
-                </LinearLayout>
+                    android:layout_marginEnd="4dp"
+                    android:textColor="@android:color/black"
+                    android:textSize="16sp"
+                    android:text="birthday" />
             </LinearLayout>
 
             <!-- Contact Number Row -->
@@ -143,33 +106,14 @@
                     android:textSize="20sp"
                     android:textStyle="bold" />
 
-                <LinearLayout
+                <TextView
+                    android:id="@+id/tvProfileContact"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <EditText
-                        android:id="@+id/etProfileContact"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="4dp"
-                        android:enabled="true"
-                        android:hint="Enter Details"
-                        android:inputType="phone"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp" />
-
-                    <ImageButton
-                        android:id="@+id/btnEditContact"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:contentDescription="Edit Contact Number"
-                        android:padding="6dp"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/ic_edit_black" />
-                </LinearLayout>
+                    android:layout_marginEnd="4dp"
+                    android:textColor="@android:color/black"
+                    android:textSize="16sp"
+                    android:text="number" />
             </LinearLayout>
 
             <!-- Email Row -->
@@ -194,13 +138,33 @@
                     android:layout_marginEnd="4dp"
                     android:textColor="@android:color/black"
                     android:textSize="16sp"
-                    android:text="Email Address" />
+                    android:text="email" />
             </LinearLayout>
 
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Logout Button -->
+    <!-- Buttons -->
+    <Button
+        android:id="@+id/btnEditProfileDetails"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:backgroundTint="#FF9800"
+        android:text="Edit Profile Details"
+        android:textColor="@android:color/white"
+        android:textSize="16sp" />
+
+    <Button
+        android:id="@+id/btnEditProfilePicture"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:backgroundTint="#8BC34A"
+        android:text="Edit Profile Picture"
+        android:textColor="@android:color/white"
+        android:textSize="16sp" />
+
     <Button
         android:id="@+id/btnLogout"
         android:layout_width="match_parent"

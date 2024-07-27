@@ -1,15 +1,9 @@
 package com.kua.miguel.mobdeve.s11.argamosakuamp.activities
 
 import android.content.Intent
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
-import android.text.Editable
-import android.text.TextWatcher
 import android.util.Log
-import android.widget.ImageButton
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -17,9 +11,10 @@ import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
-import com.kua.miguel.mobdeve.s11.argamosakuamp.R
 import com.kua.miguel.mobdeve.s11.argamosakuamp.databinding.ActivityProfileBinding
-import java.util.UUID
+import com.kua.miguel.mobdeve.s11.argamosakuamp.R
+import com.kua.miguel.mobdeve.s11.argamosakuamp.databinding.DialogEditProfileBinding
+import com.kua.miguel.mobdeve.s11.argamosakuamp.databinding.DialogEditProfilepictureBinding
 
 class ProfileActivity : AppCompatActivity() {
 
@@ -54,31 +49,14 @@ class ProfileActivity : AppCompatActivity() {
             navigateToCart()
         }
 
-        // Set up generic click listeners for EditImageButtons
-        setupEditButtonListeners()
-
-        // No whitespace allowed
-        binding.etProfileName.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-            }
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                s?.let {
-                    val filteredText = it.toString().replace("\\s|\\n|\\r".toRegex(), "")
-                    if (it.toString() != filteredText) {
-                        binding.etProfileName.setText(filteredText)
-                        binding.etProfileName.setSelection(filteredText.length)
-                    }
-                }
-            }
-
-            override fun afterTextChanged(s: Editable?) {
-            }
-        })
-
         // Set up click listener for profile picture upload
-        binding.btnUploadProfilePicture.setOnClickListener {
-            openImagePicker()
+        binding.btnEditProfilePicture.setOnClickListener {
+            showEditProfilePictureDialog()
+        }
+
+        // Set up click listener for edit profile details button
+        binding.btnEditProfileDetails.setOnClickListener {
+            showEditProfileDialog()
         }
     }
 
@@ -94,10 +72,10 @@ class ProfileActivity : AppCompatActivity() {
                     val contact = document.getString("contact")
                     val profileURL = document.getString("profileURL")
 
-                    binding.tvProfileEmail.setText(email ?: "")
-                    binding.etProfileName.setText(name ?: "")
-                    binding.etProfileBirthday.setText(birthday ?: "")
-                    binding.etProfileContact.setText(contact ?: "")
+                    binding.tvProfileEmail.text = email ?: ""
+                    binding.tvProfileName.text = name ?: ""
+                    binding.tvProfileBirthday.text = birthday ?: ""
+                    binding.tvProfileContact.text = contact ?: ""
 
                     // Load profile picture
                     if (profileURL != null) {
@@ -114,47 +92,61 @@ class ProfileActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupEditButtonListeners() {
-        binding.btnEditName.setOnClickListener { onEditButtonClicked("name") }
-        binding.btnEditBirthday.setOnClickListener { onEditButtonClicked("birthday") }
-        binding.btnEditContact.setOnClickListener { onEditButtonClicked("contact") }
-    }
+    private fun showEditProfileDialog() {
+        val dialogBinding = DialogEditProfileBinding.inflate(layoutInflater)
+        val builder = AlertDialog.Builder(this)
+        builder.setView(dialogBinding.root)
+        val dialog = builder.create()
 
-    private fun onEditButtonClicked(field: String) {
-        val currentUser = auth.currentUser ?: return
-        val docRef = firestore.collection("users").document(currentUser.uid)
+        // Populate the dialog fields with current profile data
+        dialogBinding.etEditProfileName.setText(binding.tvProfileName.text.toString())
+        dialogBinding.etEditProfileBirthday.setText(binding.tvProfileBirthday.text.toString())
+        dialogBinding.etEditProfileContact.setText(binding.tvProfileContact.text.toString())
 
-        docRef.get().addOnSuccessListener { document ->
-            val currentValue = document?.getString(field)
-            val editText = when (field) {
-                "name" -> binding.etProfileName
-                "birthday" -> binding.etProfileBirthday
-                "contact" -> binding.etProfileContact
-                else -> return@addOnSuccessListener
-            }
+        dialogBinding.btnSaveProfileDetails.setOnClickListener {
+            val newName = dialogBinding.etEditProfileName.text.toString()
+            val newBirthday = dialogBinding.etEditProfileBirthday.text.toString()
+            val newContact = dialogBinding.etEditProfileContact.text.toString()
 
-            val newValue = editText.text.toString()
+            updateProfileField("name", newName)
+            updateProfileField("birthday", newBirthday)
+            updateProfileField("contact", newContact)
 
-            if (newValue != currentValue) {
-                showConfirmationDialog(field, newValue, currentValue)
-            } else {
-                Toast.makeText(this, "No changes to $field", Toast.LENGTH_SHORT).show()
-            }
-        }.addOnFailureListener { exception ->
-            Log.d("ProfileActivity", "Failed to fetch document: ", exception)
+            dialog.dismiss()
         }
+
+        dialogBinding.btnCancelProfileEdit.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
-    private fun showConfirmationDialog(field: String, newValue: String, currentValue: String?) {
-        val message = "Are you sure you want to update your $field from \"$currentValue\" to \"$newValue\"?"
-        AlertDialog.Builder(this)
-            .setTitle("Confirm Update")
-            .setMessage(message)
-            .setPositiveButton("Yes") { _, _ ->
-                updateProfileField(field, newValue)
-            }
-            .setNegativeButton("No", null)
-            .show()
+    private fun showEditProfilePictureDialog() {
+        val dialogBinding = DialogEditProfilepictureBinding.inflate(layoutInflater)
+        val builder = AlertDialog.Builder(this)
+        builder.setView(dialogBinding.root)
+        val dialog = builder.create()
+
+        // Load current profile picture
+        val profileURL = binding.btnUploadProfilePicture.drawable
+        dialogBinding.ivProfilePicturePreview.setImageDrawable(profileURL)
+
+        dialogBinding.btnChangeProfilePicture.setOnClickListener {
+            openImagePicker()
+            dialog.dismiss()
+        }
+
+        dialogBinding.btnCancelProfilePictureEdit.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialogBinding.btnSaveProfilePicture.setOnClickListener {
+            uploadProfilePicture()
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
     private fun updateProfileField(field: String, newValue: String) {
@@ -182,7 +174,7 @@ class ProfileActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.data != null) {
             imageUri = data.data
-            uploadProfilePicture()
+            binding.btnUploadProfilePicture.setImageURI(imageUri)
         }
     }
 
