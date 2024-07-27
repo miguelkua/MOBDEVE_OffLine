@@ -36,6 +36,12 @@ class HistoryListActivity : AppCompatActivity() {
             navigateToCart()
         }
 
+        viewBinding.btnProfile.setOnClickListener {
+            navigateToProfile()
+        }
+
+
+
         loadHistoryEntries()
     }
 
@@ -68,6 +74,12 @@ class HistoryListActivity : AppCompatActivity() {
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
     }
+
+    private fun navigateToProfile() {
+        val intent = Intent(this, ProfileActivity::class.java)
+        startActivity(intent)
+    }
+
 
     private fun navigateToCart() {
         val intent = Intent(this, CartActivity::class.java)

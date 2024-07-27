@@ -73,6 +73,10 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
             navigateToHistory()
         }
 
+        viewBinding.btnProfile.setOnClickListener {
+            navigateToProfile()
+        }
+
         // Load entries from Firestore
         loadEntries()
     }
@@ -224,6 +228,11 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
                     Toast.makeText(this, "Failed to delete item from Firebase", Toast.LENGTH_SHORT).show()
                 }
         }
+    }
+
+    private fun navigateToProfile() {
+        val intent = Intent(this, ProfileActivity::class.java)
+        startActivity(intent)
     }
 
     private fun navigateToCart() {
