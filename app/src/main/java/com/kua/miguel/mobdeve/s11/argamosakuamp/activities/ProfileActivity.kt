@@ -5,6 +5,8 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -52,8 +54,27 @@ class ProfileActivity : AppCompatActivity() {
             navigateToCart()
         }
 
-        // Set up click listeners for EditImageButtons
+        // Set up generic click listeners for EditImageButtons
         setupEditButtonListeners()
+
+        // No whitespace allowed
+        binding.etProfileName.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                s?.let {
+                    val filteredText = it.toString().replace("\\s|\\n|\\r".toRegex(), "")
+                    if (it.toString() != filteredText) {
+                        binding.etProfileName.setText(filteredText)
+                        binding.etProfileName.setSelection(filteredText.length)
+                    }
+                }
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+            }
+        })
 
         // Set up click listener for profile picture upload
         binding.btnUploadProfilePicture.setOnClickListener {
@@ -73,7 +94,7 @@ class ProfileActivity : AppCompatActivity() {
                     val contact = document.getString("contact")
                     val profileURL = document.getString("profileURL")
 
-                    binding.etProfileEmail.setText(email ?: "")
+                    binding.tvProfileEmail.setText(email ?: "")
                     binding.etProfileName.setText(name ?: "")
                     binding.etProfileBirthday.setText(birthday ?: "")
                     binding.etProfileContact.setText(contact ?: "")
@@ -96,7 +117,6 @@ class ProfileActivity : AppCompatActivity() {
     private fun setupEditButtonListeners() {
         binding.btnEditName.setOnClickListener { onEditButtonClicked("name") }
         binding.btnEditBirthday.setOnClickListener { onEditButtonClicked("birthday") }
-        binding.btnEditEmail.setOnClickListener { onEditButtonClicked("email") }
         binding.btnEditContact.setOnClickListener { onEditButtonClicked("contact") }
     }
 
@@ -109,7 +129,6 @@ class ProfileActivity : AppCompatActivity() {
             val editText = when (field) {
                 "name" -> binding.etProfileName
                 "birthday" -> binding.etProfileBirthday
-                "email" -> binding.etProfileEmail
                 "contact" -> binding.etProfileContact
                 else -> return@addOnSuccessListener
             }
@@ -238,4 +257,3 @@ class ProfileActivity : AppCompatActivity() {
         startActivity(intent)
     }
 }
-

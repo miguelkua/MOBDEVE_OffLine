@@ -128,49 +128,6 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- Email Row -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_horizontal"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Email:"
-                    android:textColor="@android:color/black"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="horizontal">
-
-                    <EditText
-                        android:id="@+id/etProfileEmail"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="4dp"
-                        android:enabled="true"
-                        android:hint="Enter Details"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp" />
-
-                    <ImageButton
-                        android:id="@+id/btnEditEmail"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:contentDescription="Edit Email"
-                        android:padding="6dp"
-                        android:scaleType="centerInside"
-                        android:src="@drawable/ic_edit_black" />
-                </LinearLayout>
-            </LinearLayout>
-
             <!-- Contact Number Row -->
             <LinearLayout
                 android:layout_width="match_parent"
@@ -213,6 +170,31 @@
                         android:scaleType="centerInside"
                         android:src="@drawable/ic_edit_black" />
                 </LinearLayout>
+            </LinearLayout>
+
+            <!-- Email Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Email:"
+                    android:textColor="@android:color/black"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvProfileEmail"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
+                    android:textColor="@android:color/black"
+                    android:textSize="16sp"
+                    android:text="Email Address" />
             </LinearLayout>
 
         </LinearLayout>
