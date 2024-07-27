@@ -70,7 +70,10 @@ class SignUpActivity : ComponentActivity() {
                     // Create a new user document in Firestore
                     val userMap = hashMapOf(
                         "email" to email,
-                        "createdAt" to currentDate
+                        "createdAt" to currentDate,
+                        "name" to null,
+                        "birthday" to null,
+                        "contactnumber" to null
                     )
                     user?.let {
                         firestore.collection("users").document(it.uid)
@@ -90,4 +93,5 @@ class SignUpActivity : ComponentActivity() {
                 }
             }
     }
+
 }

@@ -1,147 +1,289 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FFFEED"
-    >
+    android:orientation="vertical">
 
     <!-- Profile Header -->
-    <TextView
-        android:id="@+id/tvProfileHeader"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:layout_marginStart="24dp"
-        android:text="Profile"
-        android:textColor="@android:color/black"
-        android:textSize="24sp"
-        android:textStyle="bold" />
 
-    <!-- Profile Picture -->
-
-    <!-- Profile Details -->
-
-    <ImageView
-        android:id="@+id/ivProfilePicture"
-        android:layout_width="124dp"
-        android:layout_height="119dp"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:layout_marginTop="86dp"
-        android:layout_marginEnd="51dp"
-        android:layout_marginBottom="527dp"
-        android:background="@drawable/circular_background"
-        android:contentDescription="Profile Picture"
-        android:scaleType="centerCrop"
-        android:src="@drawable/sample_profile_picture" />
-
+    <!-- Profile Picture and Details -->
     <LinearLayout
-        android:id="@+id/llProfileDetails"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_below="@id/tvProfileHeader"
-        android:layout_marginStart="24dp"
+        android:layout_weight="1"
+        android:gravity="center_horizontal"
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/tvProfileName"
+            android:id="@+id/tvProfileHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Miguel Carlo F. Kua"
+            android:text="Profile"
             android:textColor="@android:color/black"
-            android:textSize="18sp"
+            android:textSize="28sp"
             android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/tvProfileBirthday"
+        <ImageView
+            android:id="@+id/ivProfilePicture"
+            android:layout_width="170dp"
+            android:layout_height="161dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/circular_background"
+            android:contentDescription="Profile Picture"
+            android:scaleType="centerCrop"
+            android:src="@drawable/sample_profile_picture" />
+
+        <LinearLayout
+            android:id="@+id/llProfileDetails"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Birthday:\nAugust 19, 2003"
-            android:textColor="@android:color/black"
-            android:textSize="14sp" />
+            android:layout_marginTop="16dp"
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tvProfileEmail"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Email:\nchipmunkfun101@xyz.com"
-            android:textColor="@android:color/black"
-            android:textSize="14sp" />
+            <!-- Name Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tvProfileContact"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Contact No.:\n09566332471"
-            android:textColor="@android:color/black"
-            android:textSize="14sp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Name:"
+                    android:textColor="@android:color/black"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
 
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <EditText
+                        android:id="@+id/etProfileName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:enabled="true"
+                        android:hint="Enter Details"
+                        android:maxLength="35"
+                        android:textColor="@android:color/black"
+                        android:textSize="16sp" />
+
+                    <ImageButton
+                        android:id="@+id/btnEditName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="Edit Name"
+                        android:padding="6dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_edit_black" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Birthday Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Birthday:"
+                    android:textColor="@android:color/black"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <EditText
+                        android:id="@+id/etProfileBirthday"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:enabled="true"
+                        android:hint="Enter Details"
+                        android:inputType="datetime|date"
+                        android:textColor="@android:color/black"
+                        android:textSize="16sp" />
+
+                    <ImageButton
+                        android:id="@+id/btnEditBirthday"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="Edit Birthday"
+                        android:padding="6dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_edit_black" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Email Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Email:"
+                    android:textColor="@android:color/black"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <EditText
+                        android:id="@+id/etProfileEmail"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:enabled="true"
+                        android:hint="Enter Details"
+                        android:textColor="@android:color/black"
+                        android:textSize="16sp" />
+
+                    <ImageButton
+                        android:id="@+id/btnEditEmail"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="Edit Email"
+                        android:padding="6dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_edit_black" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Contact Number Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Contact No.:"
+                    android:textColor="@android:color/black"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <EditText
+                        android:id="@+id/etProfileContact"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="4dp"
+                        android:enabled="true"
+                        android:hint="Enter Details"
+                        android:inputType="phone"
+                        android:textColor="@android:color/black"
+                        android:textSize="16sp" />
+
+                    <ImageButton
+                        android:id="@+id/btnEditContact"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="Edit Contact Number"
+                        android:padding="6dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_edit_black" />
+                </LinearLayout>
+            </LinearLayout>
+
+        </LinearLayout>
     </LinearLayout>
 
-
-
+    <!-- Logout Button -->
+    <Button
+        android:id="@+id/btnLogout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:backgroundTint="#FF0000"
+        android:text="Logout"
+        android:textColor="@android:color/white"
+        android:textSize="16sp" />
 
     <!-- Bottom Navigation -->
     <LinearLayout
         android:id="@+id/llBottomButtons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:padding="8dp"
+        android:layout_gravity="bottom"
         android:background="#F5F5F5"
-        android:layout_alignParentBottom="true">
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="8dp">
 
         <ImageButton
             android:id="@+id/btnCheckHistory"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:src="@drawable/ic_clock"
-            android:contentDescription="History of Records"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="History of Records"
+            android:padding="6dp"
             android:scaleType="centerInside"
-            android:padding="8dp" />
+            android:src="@drawable/ic_clock" />
 
         <ImageButton
             android:id="@+id/btnList"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:src="@drawable/ic_list"
-            android:contentDescription="List"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="List"
+            android:padding="6dp"
             android:scaleType="centerInside"
-            android:padding="8dp" />
+            android:src="@drawable/ic_list" />
 
         <ImageButton
             android:id="@+id/btnCart"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:src="@drawable/ic_cart"
-            android:contentDescription="Checkout"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Checkout"
+            android:padding="6dp"
             android:scaleType="centerInside"
-            android:padding="8dp" />
+            android:src="@drawable/ic_cart" />
 
         <ImageButton
             android:id="@+id/btnProfile"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:src="@drawable/ic_user_filled"
-            android:contentDescription="Profile"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Profile"
+            android:padding="6dp"
             android:scaleType="centerInside"
-            android:padding="8dp" />
+            android:src="@drawable/ic_user_filled" />
 
     </LinearLayout>
 
-</RelativeLayout>
+</LinearLayout>

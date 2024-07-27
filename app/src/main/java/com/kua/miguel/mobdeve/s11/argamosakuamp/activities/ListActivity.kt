@@ -57,10 +57,6 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
         })
         itemTouchHelper.attachToRecyclerView(recyclerView)
 
-        viewBinding.btnTestLogout.setOnClickListener {
-            testLogout()
-        }
-
         viewBinding.btnAddEntry.setOnClickListener {
             showAddEntryDialog()
         }
@@ -257,21 +253,5 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
     private fun navigateToHistory() {
         val intent = Intent(this, HistoryListActivity::class.java)
         startActivity(intent)
-    }
-
-    private fun testLogout() {
-        auth.signOut()
-        Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show()
-
-        // Clear "Remember Me" setting
-        val sharedPreferences = getSharedPreferences("MyAppPrefs", MODE_PRIVATE)
-        val editor = sharedPreferences.edit()
-        editor.remove("RememberMe")
-        editor.apply()
-
-        // Navigate back to LoginActivity
-        val intent = Intent(this, LoginActivity::class.java)
-        startActivity(intent)
-        finish()
     }
 }

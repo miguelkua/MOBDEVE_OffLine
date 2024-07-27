@@ -40,8 +40,6 @@ class HistoryListActivity : AppCompatActivity() {
             navigateToProfile()
         }
 
-
-
         loadHistoryEntries()
     }
 
@@ -78,8 +76,8 @@ class HistoryListActivity : AppCompatActivity() {
     private fun navigateToProfile() {
         val intent = Intent(this, ProfileActivity::class.java)
         startActivity(intent)
+        finish()
     }
-
 
     private fun navigateToCart() {
         val intent = Intent(this, CartActivity::class.java)

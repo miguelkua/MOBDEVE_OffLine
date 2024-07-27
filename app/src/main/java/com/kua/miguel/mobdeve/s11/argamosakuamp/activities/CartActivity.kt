@@ -55,6 +55,10 @@ class CartActivity : AppCompatActivity() {
         viewBinding.btnCheckHistory.setOnClickListener {
             navigateToHistory()
         }
+
+        viewBinding.btnProfile.setOnClickListener {
+            navigateToProfile()
+        }
     }
 
     override fun onDestroy() {
@@ -111,9 +115,16 @@ class CartActivity : AppCompatActivity() {
         finish()
     }
 
+    private fun navigateToProfile() {
+        val intent = Intent(this, ProfileActivity::class.java)
+        startActivity(intent)
+        finish()
+    }
+
     private fun navigateToCheckout() {
         val intent = Intent(this, CheckoutActivity::class.java)
         startActivity(intent)
+        finish()
     }
 
     private fun showCheckoutConfirmationDialog() {
