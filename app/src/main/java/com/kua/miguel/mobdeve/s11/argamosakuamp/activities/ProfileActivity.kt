@@ -24,6 +24,8 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var binding: ActivityProfileBinding
     private val PICK_IMAGE_REQUEST = 1
     private var imageUri: Uri? = null
+    private var dialogBinding: DialogEditProfilepictureBinding? = null
+    private var dialog: AlertDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -123,30 +125,29 @@ class ProfileActivity : AppCompatActivity() {
     }
 
     private fun showEditProfilePictureDialog() {
-        val dialogBinding = DialogEditProfilepictureBinding.inflate(layoutInflater)
+        dialogBinding = DialogEditProfilepictureBinding.inflate(layoutInflater)
         val builder = AlertDialog.Builder(this)
-        builder.setView(dialogBinding.root)
-        val dialog = builder.create()
+        builder.setView(dialogBinding!!.root)
+        dialog = builder.create()
 
         // Load current profile picture
         val profileURL = binding.btnUploadProfilePicture.drawable
-        dialogBinding.ivProfilePicturePreview.setImageDrawable(profileURL)
+        dialogBinding!!.ivProfilePicturePreview.setImageDrawable(profileURL)
 
-        dialogBinding.btnChangeProfilePicture.setOnClickListener {
+        dialogBinding!!.btnChangeProfilePicture.setOnClickListener {
             openImagePicker()
-            dialog.dismiss()
         }
 
-        dialogBinding.btnCancelProfilePictureEdit.setOnClickListener {
-            dialog.dismiss()
+        dialogBinding!!.btnCancelProfilePictureEdit.setOnClickListener {
+            dialog?.dismiss()
         }
 
-        dialogBinding.btnSaveProfilePicture.setOnClickListener {
+        dialogBinding!!.btnSaveProfilePicture.setOnClickListener {
             uploadProfilePicture()
-            dialog.dismiss()
+            dialog?.dismiss()
         }
 
-        dialog.show()
+        dialog?.show()
     }
 
     private fun updateProfileField(field: String, newValue: String) {
@@ -174,7 +175,8 @@ class ProfileActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.data != null) {
             imageUri = data.data
-            binding.btnUploadProfilePicture.setImageURI(imageUri)
+            dialogBinding?.ivProfilePicturePreview?.setImageURI(imageUri)
+            dialog?.show()
         }
     }
 

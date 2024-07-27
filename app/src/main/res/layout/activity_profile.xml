@@ -30,7 +30,6 @@
             android:layout_width="170dp"
             android:layout_height="161dp"
             android:layout_marginTop="16dp"
-            android:background="@drawable/circular_background"
             android:contentDescription="Upload Profile Picture"
             android:scaleType="centerCrop"
           android:src="@drawable/sample_profile_picture" />
