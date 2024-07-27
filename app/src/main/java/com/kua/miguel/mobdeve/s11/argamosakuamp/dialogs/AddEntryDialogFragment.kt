@@ -2,7 +2,7 @@ package com.kua.miguel.mobdeve.s11.argamosakuamp.dialogs
 
 import android.app.Activity
 import android.app.Dialog
-import android.content.ContentValues
+import android.app.ProgressDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -21,6 +21,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import com.kua.miguel.mobdeve.s11.argamosakuamp.R
 import com.kua.miguel.mobdeve.s11.argamosakuamp.databinding.DialogAddEntryBinding
 import com.yalantis.ucrop.UCrop
@@ -29,7 +30,7 @@ import java.io.File
 class AddEntryDialogFragment : DialogFragment() {
 
     private var _binding: DialogAddEntryBinding? = null
-    private val binding get() = _binding!!
+    private val viewBinding get() = _binding!!
 
     private val REQUEST_IMAGE_CAPTURE = 1
     private val REQUEST_CAMERA_PERMISSION = 100
@@ -42,6 +43,11 @@ class AddEntryDialogFragment : DialogFragment() {
     private val auth: FirebaseAuth by lazy {
         FirebaseAuth.getInstance()
     }
+    private val storage: FirebaseStorage by lazy {
+        FirebaseStorage.getInstance()
+    }
+
+    private var progressDialog: ProgressDialog? = null
 
     interface AddEntryListener {
         fun onAddEntry(itemName: String, quantity: Int, imageUri: Uri?)
@@ -54,57 +60,59 @@ class AddEntryDialogFragment : DialogFragment() {
         savedInstanceState: Bundle?
     ): View? {
         _binding = DialogAddEntryBinding.inflate(inflater, container, false)
-        return binding.root
+        return viewBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         var quantity = 1
-        binding.tvQuantity.text = quantity.toString()
+        viewBinding.tvQuantity.text = quantity.toString()
 
         // Set up character count TextWatcher
-        binding.etItemName.addTextChangedListener(object : TextWatcher {
+        viewBinding.etItemName.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val charCount = s?.length ?: 0
-                binding.tvCharacterCount.text = "$charCount / 25 Characters"
+                viewBinding.tvCharacterCount.text = "$charCount / 25 Characters"
             }
             override fun afterTextChanged(s: Editable?) {}
         })
 
-        binding.btnIncrease.setOnClickListener {
+        viewBinding.btnIncrease.setOnClickListener {
             if (quantity < 99) {
                 quantity++
-                binding.tvQuantity.text = quantity.toString()
+                viewBinding.tvQuantity.text = quantity.toString()
             } else {
                 Toast.makeText(context, "Maximum quantity is 99", Toast.LENGTH_SHORT).show()
             }
         }
 
-        binding.btnDecrease.setOnClickListener {
+        viewBinding.btnDecrease.setOnClickListener {
             if (quantity > 1) {
                 quantity--
-                binding.tvQuantity.text = quantity.toString()
+                viewBinding.tvQuantity.text = quantity.toString()
             } else {
                 Toast.makeText(context, "Quantity cannot be less than 1", Toast.LENGTH_SHORT).show()
             }
         }
 
-        binding.btnAddEntry.setOnClickListener {
-            val itemName = binding.etItemName.text.toString()
+        viewBinding.btnAddEntry.setOnClickListener {
+            val itemName = viewBinding.etItemName.text.toString()
 
             if (itemName.isEmpty()) {
                 Toast.makeText(context, "Item name cannot be empty", Toast.LENGTH_SHORT).show()
             } else if (itemName.length > 25) {
                 Toast.makeText(context, "Item name cannot exceed 25 characters", Toast.LENGTH_SHORT).show()
+            } else if (croppedImageUri == null) {
+                Toast.makeText(context, "Please upload an image", Toast.LENGTH_SHORT).show()
             } else {
-                saveEntryToFirebase(itemName, quantity, croppedImageUri)
-                dismiss()
+                showProgressDialog()
+                uploadImageAndSaveEntry(itemName, quantity, croppedImageUri)
             }
         }
 
-        binding.btnUploadImage.setOnClickListener {
+        viewBinding.btnUploadImage.setOnClickListener {
             if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.CAMERA) ==
                 PackageManager.PERMISSION_GRANTED) {
                 if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
@@ -123,7 +131,7 @@ class AddEntryDialogFragment : DialogFragment() {
             }
         }
 
-        binding.btnCancel.setOnClickListener {
+        viewBinding.btnCancel.setOnClickListener {
             resetDialog()
             dismiss()
         }
@@ -141,20 +149,24 @@ class AddEntryDialogFragment : DialogFragment() {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
             val imageBitmap = data?.extras?.get("data") as? Bitmap
             if (imageBitmap != null) {
-                imageUri = saveImageToMediaStore(imageBitmap)
-                if (imageUri != null) {
-                    startCropActivity(imageUri!!)
-                } else {
-                    Toast.makeText(context, "Failed to save image", Toast.LENGTH_SHORT).show()
-                }
+                // Save bitmap to a file in cache and get URI
+                val tempFile = File(requireContext().cacheDir, "temp_image_${System.currentTimeMillis()}.jpg")
+                val outputStream = tempFile.outputStream()
+                imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+                outputStream.flush()
+                outputStream.close()
+
+                // Create URI for cropping
+                imageUri = Uri.fromFile(tempFile)
+                startCropActivity(imageUri!!)
             } else {
                 Toast.makeText(context, "Image capture failed", Toast.LENGTH_SHORT).show()
             }
         } else if (requestCode == UCrop.REQUEST_CROP && resultCode == Activity.RESULT_OK) {
             croppedImageUri = UCrop.getOutput(data!!)
             if (croppedImageUri != null) {
-                binding.ivBarcodeSample.setImageURI(null) // Clear previous image
-                binding.ivBarcodeSample.setImageURI(croppedImageUri)
+                viewBinding.ivBarcodeSample.setImageURI(null) // Clear previous image
+                viewBinding.ivBarcodeSample.setImageURI(croppedImageUri)
             }
         } else if (requestCode == UCrop.RESULT_ERROR) {
             Toast.makeText(context, "Crop error: ${UCrop.getError(data!!)?.message}", Toast.LENGTH_SHORT).show()
@@ -174,32 +186,52 @@ class AddEntryDialogFragment : DialogFragment() {
             .start(requireContext(), this)
     }
 
-    private fun saveImageToMediaStore(bitmap: Bitmap): Uri? {
-        val contentValues = ContentValues().apply {
-            put(MediaStore.Images.Media.DISPLAY_NAME, "image_${System.currentTimeMillis()}.jpg")
-            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/${requireContext().getString(R.string.app_name)}")
-            }
-        }
+    private fun uploadImageToFirebase(uri: Uri, onComplete: (String?) -> Unit) {
+        val userId = auth.currentUser?.uid ?: return
+        val storageRef = storage.reference.child("images/${userId}/${System.currentTimeMillis()}.jpg")
+        val uploadTask = storageRef.putFile(uri)
 
-        val uri = requireContext().contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-        uri?.let {
-            requireContext().contentResolver.openOutputStream(it)?.use { outputStream ->
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+        uploadTask.addOnSuccessListener {
+            storageRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                onComplete(downloadUri.toString())
+            }.addOnFailureListener { e ->
+                Log.e("FirebaseStorageError", "Failed to get download URL", e)
+                onComplete(null)
             }
+        }.addOnFailureListener { e ->
+            Log.e("FirebaseStorageError", "Failed to upload image", e)
+            onComplete(null)
         }
-        return uri
     }
 
-    private fun saveEntryToFirebase(itemName: String, quantity: Int, imageUri: Uri?) {
+    private fun uploadImageAndSaveEntry(itemName: String, quantity: Int, imageUri: Uri?) {
+        imageUri?.let {
+            uploadImageToFirebase(it) { downloadUrl ->
+                if (downloadUrl != null) {
+                    saveEntryToFirebase(itemName, quantity, downloadUrl)
+                } else {
+                    dismissProgressDialog()
+                    if (isAdded) {
+                        Toast.makeText(requireContext(), "Failed to upload image", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        } ?: run {
+            dismissProgressDialog()
+            if (isAdded) {
+                Toast.makeText(requireContext(), "Image URI is null", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun saveEntryToFirebase(itemName: String, quantity: Int, imageUrl: String?) {
         val userId = auth.currentUser?.uid
         if (userId != null) {
             val entryId = firestore.collection("users").document(userId).collection("currentList").document().id
             val entry = mapOf(
                 "itemName" to itemName,
                 "quantity" to quantity,
-                "imageUri" to imageUri?.toString()
+                "imageUri" to imageUrl
             )
 
             Log.d("FirebaseDebug", "Attempting to save entry with ID: $entryId, data: $entry")
@@ -207,37 +239,53 @@ class AddEntryDialogFragment : DialogFragment() {
             firestore.collection("users").document(userId).collection("currentList").document(entryId).set(entry)
                 .addOnSuccessListener {
                     Log.d("FirebaseDebug", "Successfully added entry with ID: $entryId")
-                    if (context != null) {
-                        Toast.makeText(context, "Entry added successfully", Toast.LENGTH_SHORT).show()
+                    dismissProgressDialog()
+                    if (isAdded) {
+                        Toast.makeText(requireContext(), "Entry added successfully", Toast.LENGTH_SHORT).show()
+                        dismiss() // Close the dialog
                     }
                 }
                 .addOnFailureListener { exception ->
                     Log.e("FirebaseError", "Failed to add entry with ID: $entryId", exception)
-                    if (context != null) {
-                        Toast.makeText(context, "Failed to add entry: ${exception.message}", Toast.LENGTH_SHORT).show()
+                    dismissProgressDialog()
+                    if (isAdded) {
+                        Toast.makeText(requireContext(), "Failed to add entry: ${exception.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
         } else {
             Log.w("FirebaseWarning", "User is not logged in")
-            if (context != null) {
-                Toast.makeText(context, "User not logged in", Toast.LENGTH_SHORT).show()
+            dismissProgressDialog()
+            if (isAdded) {
+                Toast.makeText(requireContext(), "User not logged in", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
+    private fun showProgressDialog() {
+        progressDialog = ProgressDialog(context).apply {
+            setMessage("Processing...")
+            setCancelable(false)
+            show()
+        }
+    }
 
+    private fun dismissProgressDialog() {
+        progressDialog?.dismiss()
+        progressDialog = null
+    }
 
     private fun resetDialog() {
-        binding.etItemName.text.clear()
-        binding.tvQuantity.text = "1"
-        binding.ivBarcodeSample.setImageResource(R.drawable.barcode_sample)
-        binding.tvCharacterCount.text = "0 / 25 Characters"
+        viewBinding.etItemName.text.clear()
+        viewBinding.tvQuantity.text = "1"
+        viewBinding.ivBarcodeSample.setImageResource(R.drawable.barcode_sample)
+        viewBinding.tvCharacterCount.text = "0 / 25 Characters"
         imageUri = null
         croppedImageUri = null
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        dismissProgressDialog()
         _binding = null
     }
 

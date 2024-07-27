@@ -1,10 +1,11 @@
 package com.kua.miguel.mobdeve.s11.argamosakuamp.dialogs
 
 import android.app.Activity
-import android.content.ContentValues
+import android.app.ProgressDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -20,7 +21,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.kua.miguel.mobdeve.s11.argamosakuamp.R
+import com.google.firebase.storage.FirebaseStorage
 import com.kua.miguel.mobdeve.s11.argamosakuamp.databinding.DialogEditEntryBinding
 import com.yalantis.ucrop.UCrop
 import java.io.File
@@ -28,7 +29,7 @@ import java.io.File
 class EditEntryDialogFragment : DialogFragment() {
 
     private var _binding: DialogEditEntryBinding? = null
-    private val binding get() = _binding!!
+    private val viewBinding get() = _binding!!
 
     private val REQUEST_IMAGE_CAPTURE = 1
     private val REQUEST_CAMERA_PERMISSION = 100
@@ -43,69 +44,84 @@ class EditEntryDialogFragment : DialogFragment() {
     private val auth: FirebaseAuth by lazy {
         FirebaseAuth.getInstance()
     }
+    private val storage: FirebaseStorage by lazy {
+        FirebaseStorage.getInstance()
+    }
+
+    private var progressDialog: ProgressDialog? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         _binding = DialogEditEntryBinding.inflate(inflater, container, false)
-
-        // Hide the content until data is loaded, for seamless viewing
-        binding.root.visibility = View.INVISIBLE
-
-        entryId = arguments?.getString(ARG_ENTRY_ID)
-
-        return binding.root
+        return viewBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Hide the content until data is loaded
+        viewBinding.root.visibility = View.INVISIBLE
+
+        entryId = arguments?.getString(ARG_ENTRY_ID)
+
+        setupViews()
+        preloadEntryData()
+    }
+
+    private fun setupViews() {
         // Set up character count TextWatcher
-        binding.etEditItemName.addTextChangedListener(object : TextWatcher {
+        viewBinding.etEditItemName.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val charCount = s?.length ?: 0
-                binding.tvEditCharacterCount.text = "$charCount / 25 Characters"
+                viewBinding.tvEditCharacterCount.text = "$charCount / 25 Characters"
             }
             override fun afterTextChanged(s: Editable?) {}
         })
 
-        binding.btnEditIncrease.setOnClickListener {
-            var quantity = binding.tvEditQuantity.text.toString().toInt()
+        viewBinding.btnEditIncrease.setOnClickListener {
+            var quantity = viewBinding.tvEditQuantity.text.toString().toInt()
             if (quantity < 99) {
                 quantity++
-                binding.tvEditQuantity.text = quantity.toString()
+                viewBinding.tvEditQuantity.text = quantity.toString()
             } else {
                 Toast.makeText(context, "Maximum quantity is 99", Toast.LENGTH_SHORT).show()
             }
         }
 
-        binding.btnEditDecrease.setOnClickListener {
-            var quantity = binding.tvEditQuantity.text.toString().toInt()
+        viewBinding.btnEditDecrease.setOnClickListener {
+            var quantity = viewBinding.tvEditQuantity.text.toString().toInt()
             if (quantity > 1) {
                 quantity--
-                binding.tvEditQuantity.text = quantity.toString()
+                viewBinding.tvEditQuantity.text = quantity.toString()
             } else {
                 Toast.makeText(context, "Quantity cannot be less than 1", Toast.LENGTH_SHORT).show()
             }
         }
 
-        binding.btnEditEntry.setOnClickListener {
-            val itemName = binding.etEditItemName.text.toString()
-            val quantity = binding.tvEditQuantity.text.toString().toInt()
+        viewBinding.btnEditEntry.setOnClickListener {
+            val itemName = viewBinding.etEditItemName.text.toString()
+            val quantity = viewBinding.tvEditQuantity.text.toString().toInt()
 
             if (itemName.isEmpty()) {
                 Toast.makeText(context, "Item name cannot be empty", Toast.LENGTH_SHORT).show()
             } else if (itemName.length > 25) {
                 Toast.makeText(context, "Item name cannot exceed 25 characters", Toast.LENGTH_SHORT).show()
             } else {
-                updateEntryInFirebase(itemName, quantity, croppedImageUri)
-                dismiss()
+                if (isImageChanged || itemName != oldItemName || quantity != oldQuantity) {
+                    if (isImageChanged) {
+                        showProgressDialog()
+                    }
+                    updateEntryInFirebase(itemName, quantity, croppedImageUri)
+                } else {
+                    Toast.makeText(context, "No changes detected", Toast.LENGTH_SHORT).show()
+                }
             }
         }
 
-        binding.btnEditImage.setOnClickListener {
+        viewBinding.btnEditImage.setOnClickListener {
             if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.CAMERA) ==
                 PackageManager.PERMISSION_GRANTED) {
                 if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
@@ -123,11 +139,9 @@ class EditEntryDialogFragment : DialogFragment() {
             }
         }
 
-        binding.btnEditCancel.setOnClickListener {
+        viewBinding.btnEditCancel.setOnClickListener {
             dismiss()
         }
-
-        preloadEntryData()
     }
 
     private fun preloadEntryData() {
@@ -142,20 +156,38 @@ class EditEntryDialogFragment : DialogFragment() {
                         val quantity = document.getLong("quantity")?.toInt()
                         val imageUriString = document.getString("imageUri")
 
-                        binding.etEditItemName.setText(itemName)
-                        binding.tvEditQuantity.text = quantity?.toString()
+                        oldItemName = itemName ?: ""
+                        oldQuantity = quantity ?: 0
+
+                        viewBinding.etEditItemName.setText(itemName)
+                        viewBinding.tvEditQuantity.text = quantity?.toString()
+
                         if (imageUriString != null) {
-                            imageUri = Uri.parse(imageUriString)
-                            binding.ivEditBarcodeSample.setImageURI(imageUri)
+                            try {
+                                val storageReference = FirebaseStorage.getInstance().getReferenceFromUrl(imageUriString)
+                                val oneMegaByte: Long = 1024 * 1024
+                                storageReference.getBytes(oneMegaByte)
+                                    .addOnSuccessListener { bytes ->
+                                        val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                                        viewBinding.ivEditBarcodeSample.setImageBitmap(bitmap)
+                                        viewBinding.root.visibility = View.VISIBLE
+                                    }
+                                    .addOnFailureListener { exception ->
+                                        Log.e("EditEntryDialog", "Failed to load image: ${exception.message}")
+                                        viewBinding.root.visibility = View.VISIBLE // Show view even if image loading fails
+                                    }
+                            } catch (e: IllegalArgumentException) {
+                                Log.e("EditEntryDialog", "Invalid image URI: $imageUriString")
+                                viewBinding.root.visibility = View.VISIBLE // Show view even if image URI is invalid
+                            }
+                        } else {
+                            viewBinding.root.visibility = View.VISIBLE // Show view if no image URI
                         }
                     }
                 }
                 .addOnFailureListener { exception ->
                     Toast.makeText(context, "Failed to load entry: ${exception.message}", Toast.LENGTH_SHORT).show()
-                }
-                .addOnCompleteListener {
-                    // Make the view visible after data is loaded
-                    binding.root.visibility = View.VISIBLE
+                    viewBinding.root.visibility = View.VISIBLE // Show view even if Firestore document loading fails
                 }
         }
     }
@@ -174,7 +206,13 @@ class EditEntryDialogFragment : DialogFragment() {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
             val imageBitmap = data?.extras?.get("data") as? Bitmap
             if (imageBitmap != null) {
-                imageUri = saveImageToMediaStore(imageBitmap)
+                val tempFile = File(requireContext().cacheDir, "temp_image_${System.currentTimeMillis()}.jpg")
+                val outputStream = tempFile.outputStream()
+                imageBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+                outputStream.flush()
+                outputStream.close()
+
+                imageUri = Uri.fromFile(tempFile)
                 imageUri?.let {
                     isImageChanged = true
                     startCropActivity(it)
@@ -188,7 +226,7 @@ class EditEntryDialogFragment : DialogFragment() {
             croppedImageUri = UCrop.getOutput(data!!)
             croppedImageUri?.let {
                 isImageChanged = true
-                binding.ivEditBarcodeSample.setImageURI(it)
+                viewBinding.ivEditBarcodeSample.setImageURI(it)
             }
         } else if (requestCode == UCrop.RESULT_ERROR) {
             Toast.makeText(context, "Crop error: ${UCrop.getError(data!!)?.message}", Toast.LENGTH_SHORT).show()
@@ -208,89 +246,81 @@ class EditEntryDialogFragment : DialogFragment() {
             .start(requireContext(), this)
     }
 
-    private fun saveImageToMediaStore(bitmap: Bitmap): Uri? {
-        val contentValues = ContentValues().apply {
-            put(MediaStore.Images.Media.DISPLAY_NAME, "image_${System.currentTimeMillis()}.jpg")
-            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/${requireContext().getString(R.string.app_name)}")
-            }
-        }
-
-        val uri = requireContext().contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-        uri?.let {
-            requireContext().contentResolver.openOutputStream(it)?.use { outputStream ->
-                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-            }
-        }
-        return uri
-    }
-
-    private fun getCurrentEntry(callback: (Map<String, Any>?) -> Unit) {
+    private fun updateEntryInFirebase(itemName: String, quantity: Int, newImageUri: Uri?) {
         val userId = auth.currentUser?.uid
         if (userId != null && entryId != null) {
-            firestore.collection("users").document(userId)
+            val documentRef = firestore.collection("users").document(userId)
                 .collection("currentList").document(entryId!!)
-                .get()
-                .addOnSuccessListener { document ->
-                    callback(document?.data as? Map<String, Any>)
-                }
-                .addOnFailureListener { exception ->
-                    Toast.makeText(context, "Failed to retrieve current entry: ${exception.message}", Toast.LENGTH_SHORT).show()
-                    callback(null)
-                }
-        } else {
-            callback(null)
-        }
-    }
 
-    private fun updateEntryInFirebase(itemName: String, quantity: Int, imageUri: Uri?) {
-        Log.d("EditEntryDialog", "Updating entry: itemName=$itemName, quantity=$quantity, imageUri=$imageUri")
-        val userId = auth.currentUser?.uid
-        if (userId != null && entryId != null) {
-            getCurrentEntry { currentEntry ->
-                if (currentEntry != null) {
-                    val entry = mutableMapOf<String, Any>(
-                        "itemName" to itemName,
-                        "quantity" to quantity
-                    )
+            if (newImageUri != null) {
+                val storageRef = storage.reference
+                val oldImageRef = documentRef.get().continueWith { task ->
+                    task.result?.getString("imageUri")?.let { FirebaseStorage.getInstance().getReferenceFromUrl(it) }
+                }
 
-                    if (isImageChanged) {
-                        entry["imageUri"] = imageUri?.toString() ?: ""
-                    } else {
-                        currentEntry["imageUri"]?.let { existingImageUri ->
-                            entry["imageUri"] = existingImageUri
+                val imageRef = storageRef.child("images/$userId/${System.currentTimeMillis()}_${newImageUri.lastPathSegment}")
+                imageRef.putFile(newImageUri)
+                    .addOnSuccessListener { taskSnapshot ->
+                        imageRef.downloadUrl.addOnSuccessListener { downloadUri ->
+                            documentRef.update("itemName", itemName, "quantity", quantity, "imageUri", downloadUri.toString())
+                                .addOnSuccessListener {
+                                    oldImageRef.result?.delete()?.addOnCompleteListener {
+                                        Log.d("EditEntryDialog", "Old image deleted")
+                                    }
+                                    Toast.makeText(context, "Entry updated successfully", Toast.LENGTH_SHORT).show()
+                                    dismiss()
+                                }
+                                .addOnFailureListener { exception ->
+                                    Toast.makeText(context, "Failed to update entry: ${exception.message}", Toast.LENGTH_SHORT).show()
+                                    Log.e("EditEntryDialog", "Failed to update entry", exception)
+                                }
                         }
                     }
-
-                    firestore.collection("users").document(userId)
-                        .collection("currentList").document(entryId!!)
-                        .set(entry)
-                        .addOnSuccessListener {
-                            Log.d("EditEntryDialog", "Entry updated successfully")
-                            context?.let { safeContext ->
-                                Toast.makeText(safeContext, "Entry updated successfully", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                        .addOnFailureListener { exception ->
-                            Log.e("EditEntryDialog", "Failed to update entry: ${exception.message}")
-                            context?.let { safeContext ->
-                                Toast.makeText(safeContext, "Failed to update entry: ${exception.message}", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                } else {
-                    Log.e("EditEntryDialog", "Current entry not found")
-                    Toast.makeText(context, "Current entry not found", Toast.LENGTH_SHORT).show()
-                }
+                    .addOnFailureListener { exception ->
+                        Toast.makeText(context, "Failed to upload image: ${exception.message}", Toast.LENGTH_SHORT).show()
+                        Log.e("EditEntryDialog", "Failed to upload image", exception)
+                    }
+                    .addOnCompleteListener {
+                        dismissProgressDialog()
+                    }
+            } else {
+                documentRef.update("itemName", itemName, "quantity", quantity)
+                    .addOnSuccessListener {
+                        Toast.makeText(context, "Entry updated successfully", Toast.LENGTH_SHORT).show()
+                        dismiss()
+                    }
+                    .addOnFailureListener { exception ->
+                        Toast.makeText(context, "Failed to update entry: ${exception.message}", Toast.LENGTH_SHORT).show()
+                        Log.e("EditEntryDialog", "Failed to update entry", exception)
+                    }
+                    .addOnCompleteListener {
+                        dismissProgressDialog()
+                    }
             }
-        } else {
-            Log.e("EditEntryDialog", "User or Entry ID is null")
-            Toast.makeText(context, "User or Entry ID is null", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun showProgressDialog() {
+        progressDialog = ProgressDialog(context).apply {
+            setMessage("Updating entry...")
+            setCancelable(false)
+            show()
+        }
+    }
+
+    private fun dismissProgressDialog() {
+        progressDialog?.dismiss()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     companion object {
         private const val ARG_ENTRY_ID = "entry_id"
+        private var oldItemName: String = ""
+        private var oldQuantity: Int = 0
 
         fun newInstance(entryId: String): EditEntryDialogFragment {
             val fragment = EditEntryDialogFragment()

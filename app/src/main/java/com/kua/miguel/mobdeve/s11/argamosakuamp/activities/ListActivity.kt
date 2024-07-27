@@ -5,7 +5,6 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -14,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import com.google.firebase.storage.FirebaseStorage
 import com.kua.miguel.mobdeve.s11.argamosakuamp.R
 import com.kua.miguel.mobdeve.s11.argamosakuamp.adapters.ListAdapter
 import com.kua.miguel.mobdeve.s11.argamosakuamp.databinding.ActivityListBinding
@@ -81,7 +81,6 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
         loadEntries()
     }
 
-
     override fun onDestroy() {
         super.onDestroy()
         // Unregister the Firestore listener when activity is destroyed
@@ -119,7 +118,6 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
         }
     }
 
-
     private fun showAddEntryDialog() {
         val dialog = AddEntryDialogFragment()
         dialog.setAddEntryListener(this)
@@ -127,8 +125,7 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
     }
 
     override fun onAddEntry(itemName: String, quantity: Int, imageUri: Uri?) {
-        // Handle the addition of the new entry here
-        val imageUriString = imageUri?.toString() // Convert URI to String if needed
+        val imageUriString = imageUri?.toString()
         Toast.makeText(this, "Added: $itemName, Quantity: $quantity, Image URI: $imageUriString", Toast.LENGTH_SHORT).show()
 
         // Save the new entry to Firestore
@@ -142,7 +139,6 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
             )
             firestore.collection("users").document(userId).collection("currentList").document(entryId).set(entry)
                 .addOnSuccessListener {
-                    // Entry added successfully
                 }
                 .addOnFailureListener {
                     Toast.makeText(this, "Failed to add entry: ${it.message}", Toast.LENGTH_SHORT).show()
@@ -153,7 +149,7 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
     private fun editButton(position: Int): SwipeHelper.UnderlayButton {
         return SwipeHelper.UnderlayButton(
             this,
-            R.drawable.edit, // Use drawable resource ID
+            R.drawable.edit,
             14.0f,
             android.R.color.holo_orange_light,
             object : SwipeHelper.UnderlayButtonClickListener {
@@ -171,17 +167,14 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
         )
     }
 
-
     private fun deleteButton(position: Int): SwipeHelper.UnderlayButton {
         return SwipeHelper.UnderlayButton(
             this,
-            R.drawable.delete, // Use drawable resource ID
+            R.drawable.delete,
             14.0f,
             android.R.color.holo_red_light,
             object : SwipeHelper.UnderlayButtonClickListener {
                 override fun onClick() {
-//                    val entryId = data[position].documentId
-//                    Log.d("ListActivity", "Delete button clicked for entry ID: $entryId")
                     showDeleteConfirmationDialog(position)
                 }
             }
@@ -189,7 +182,7 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
     }
 
     private fun showDeleteConfirmationDialog(position: Int) {
-        val itemName = data[position].productName // Assuming 'productName' is the property in your data class
+        val itemName = data[position].productName
         val entryId = data[position].documentId
 
         AlertDialog.Builder(this)
@@ -212,21 +205,42 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
 
     private fun deleteItemFromFirestore(entryId: String) {
         val firestore = FirebaseFirestore.getInstance()
+        val storage = FirebaseStorage.getInstance()
         val userId = FirebaseAuth.getInstance().currentUser?.uid
 
         if (userId != null) {
-            firestore.collection("users")
+            val documentRef = firestore.collection("users")
                 .document(userId)
                 .collection("currentList")
                 .document(entryId)
-                .delete()
-                .addOnSuccessListener {
-                    Log.d("ListActivity", "DocumentSnapshot successfully deleted!")
+
+            // Deletes both the file and the entru in the DB
+            documentRef.get().addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val imageUri = document.getString("imageUri")
+                    if (!imageUri.isNullOrEmpty()) {
+                        val imageRef = storage.getReferenceFromUrl(imageUri)
+                        imageRef.delete().addOnSuccessListener {
+                            Log.d("ListActivity", "Image file deleted successfully from Firebase Storage")
+                        }.addOnFailureListener { e ->
+                            Log.w("ListActivity", "Error deleting image file from Firebase Storage", e)
+                        }
+                    }
+
+                    documentRef.delete()
+                        .addOnSuccessListener {
+                            Log.d("ListActivity", "DocumentSnapshot successfully deleted!")
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w("ListActivity", "Error deleting document", e)
+                            Toast.makeText(this, "Failed to delete item from Firebase", Toast.LENGTH_SHORT).show()
+                        }
+                } else {
+                    Log.d("ListActivity", "Document does not exist")
                 }
-                .addOnFailureListener { e ->
-                    Log.w("ListActivity", "Error deleting document", e)
-                    Toast.makeText(this, "Failed to delete item from Firebase", Toast.LENGTH_SHORT).show()
-                }
+            }.addOnFailureListener { e ->
+                Log.w("ListActivity", "Error getting document", e)
+            }
         }
     }
 
@@ -245,7 +259,6 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
         startActivity(intent)
     }
 
-
     private fun testLogout() {
         auth.signOut()
         Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show()
@@ -262,4 +275,3 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
         finish()
     }
 }
-
