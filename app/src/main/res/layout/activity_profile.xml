@@ -23,13 +23,13 @@
             android:textSize="28sp"
             android:textStyle="bold" />
 
-        <ImageView
-            android:id="@+id/ivProfilePicture"
+        <ImageButton
+            android:id="@+id/btnUploadProfilePicture"
             android:layout_width="170dp"
             android:layout_height="161dp"
             android:layout_marginTop="16dp"
             android:background="@drawable/circular_background"
-            android:contentDescription="Profile Picture"
+            android:contentDescription="Upload Profile Picture"
             android:scaleType="centerCrop"
             android:src="@drawable/sample_profile_picture" />
 

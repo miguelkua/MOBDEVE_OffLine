@@ -73,7 +73,8 @@ class SignUpActivity : ComponentActivity() {
                         "createdAt" to currentDate,
                         "name" to null,
                         "birthday" to null,
-                        "contactnumber" to null
+                        "contactnumber" to null,
+                        "profileURL" to null
                     )
                     user?.let {
                         firestore.collection("users").document(it.uid)

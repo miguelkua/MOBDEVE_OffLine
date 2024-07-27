@@ -1,25 +1,32 @@
 package com.kua.miguel.mobdeve.s11.argamosakuamp.activities
 
 import android.content.Intent
+import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
+import android.provider.MediaStore
 import android.util.Log
-import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import com.kua.miguel.mobdeve.s11.argamosakuamp.R
 import com.kua.miguel.mobdeve.s11.argamosakuamp.databinding.ActivityProfileBinding
+import java.util.UUID
 
 class ProfileActivity : AppCompatActivity() {
 
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val storage: FirebaseStorage = FirebaseStorage.getInstance()
     private lateinit var binding: ActivityProfileBinding
+    private val PICK_IMAGE_REQUEST = 1
+    private var imageUri: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,8 +55,10 @@ class ProfileActivity : AppCompatActivity() {
         // Set up click listeners for EditImageButtons
         setupEditButtonListeners()
 
-        // Set up text watchers for validation
-        setupTextWatchers()
+        // Set up click listener for profile picture upload
+        binding.btnUploadProfilePicture.setOnClickListener {
+            openImagePicker()
+        }
     }
 
     private fun fetchUserProfile() {
@@ -62,11 +71,19 @@ class ProfileActivity : AppCompatActivity() {
                     val name = document.getString("name")
                     val birthday = document.getString("birthday")
                     val contact = document.getString("contact")
+                    val profileURL = document.getString("profileURL")
 
                     binding.etProfileEmail.setText(email ?: "")
                     binding.etProfileName.setText(name ?: "")
                     binding.etProfileBirthday.setText(birthday ?: "")
                     binding.etProfileContact.setText(contact ?: "")
+
+                    // Load profile picture
+                    if (profileURL != null) {
+                        Glide.with(this).load(profileURL).into(binding.btnUploadProfilePicture)
+                    } else {
+                        binding.btnUploadProfilePicture.setImageResource(R.drawable.sample_profile_picture)
+                    }
                 } else {
                     Log.d("ProfileActivity", "No such document")
                 }
@@ -136,6 +153,57 @@ class ProfileActivity : AppCompatActivity() {
             }
     }
 
+    private fun openImagePicker() {
+        val intent = Intent(Intent.ACTION_PICK)
+        intent.type = "image/*"
+        startActivityForResult(intent, PICK_IMAGE_REQUEST)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.data != null) {
+            imageUri = data.data
+            uploadProfilePicture()
+        }
+    }
+
+    private fun uploadProfilePicture() {
+        val user = auth.currentUser ?: return
+        val userId = user.uid
+        val newProfilePicRef = storage.reference.child("images/$userId/ProfilePic_${System.currentTimeMillis()}.jpg")
+
+        // Fetch the current profile picture URL from Firestore
+        firestore.collection("users").document(userId).get()
+            .addOnSuccessListener { document ->
+                val oldProfileURL = document.getString("profileURL")
+                val oldProfilePicRef = oldProfileURL?.let { Uri.parse(it) }?.let { storage.getReferenceFromUrl(it.toString()) }
+
+                // Delete the old profile picture if it exists
+                oldProfilePicRef?.delete()?.addOnSuccessListener {
+                    Log.d("ProfileActivity", "Old profile picture deleted successfully")
+                }?.addOnFailureListener { exception ->
+                    Log.d("ProfileActivity", "Failed to delete old profile picture: ", exception)
+                }
+
+                // Upload the new profile picture
+                imageUri?.let { uri ->
+                    newProfilePicRef.putFile(uri)
+                        .addOnSuccessListener {
+                            newProfilePicRef.downloadUrl.addOnSuccessListener { downloadUrl ->
+                                updateProfileField("profileURL", downloadUrl.toString())
+                            }
+                        }
+                        .addOnFailureListener { exception ->
+                            Log.d("ProfileActivity", "Upload failed: ", exception)
+                            Toast.makeText(this, "Upload failed", Toast.LENGTH_SHORT).show()
+                        }
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.d("ProfileActivity", "Failed to fetch document: ", exception)
+            }
+    }
+
     private fun logoutUser() {
         auth.signOut()
         Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show()
@@ -169,27 +237,5 @@ class ProfileActivity : AppCompatActivity() {
         val intent = Intent(this, HistoryListActivity::class.java)
         startActivity(intent)
     }
-
-    private fun setupTextWatchers() {
-        binding.etProfileName.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                if (s != null && s.length == 35) {
-                    Toast.makeText(this@ProfileActivity, "Name cannot exceed 35 characters", Toast.LENGTH_SHORT).show()
-                }
-            }
-            override fun afterTextChanged(s: Editable?) {}
-        })
-
-        binding.etProfileContact.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                if (s != null && !s.toString().matches("\\d*".toRegex())) {
-                    binding.etProfileContact.setText(s.toString().filter { it.isDigit() })
-                    binding.etProfileContact.setSelection(binding.etProfileContact.text.length)
-                }
-            }
-            override fun afterTextChanged(s: Editable?) {}
-        })
-    }
 }
+

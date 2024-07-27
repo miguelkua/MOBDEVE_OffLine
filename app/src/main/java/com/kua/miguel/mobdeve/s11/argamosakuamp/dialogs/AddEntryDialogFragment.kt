@@ -242,7 +242,7 @@ class AddEntryDialogFragment : DialogFragment() {
                     dismissProgressDialog()
                     if (isAdded) {
                         Toast.makeText(requireContext(), "Entry added successfully", Toast.LENGTH_SHORT).show()
-                        dismiss() // Close the dialog
+                        dismiss()
                     }
                 }
                 .addOnFailureListener { exception ->
