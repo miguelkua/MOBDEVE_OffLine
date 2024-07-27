@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.kua.miguel.mobdeve.s11.argamosakuamp.adapters.HistoryListAdapter
@@ -14,7 +13,6 @@ import com.kua.miguel.mobdeve.s11.argamosakuamp.models.HistoryEntryModel
 
 class HistoryListActivity : AppCompatActivity() {
 
-    private lateinit var recyclerView: RecyclerView
     private lateinit var historyListAdapter: HistoryListAdapter
     private lateinit var viewBinding: ActivityHistoryListBinding
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
@@ -25,8 +23,7 @@ class HistoryListActivity : AppCompatActivity() {
         viewBinding = ActivityHistoryListBinding.inflate(layoutInflater)
         setContentView(viewBinding.root)
 
-        recyclerView = viewBinding.recyclerViewHistory
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        viewBinding.recyclerViewHistory.layoutManager = LinearLayoutManager(this)
 
         viewBinding.btnList.setOnClickListener {
             navigateToList()
@@ -54,11 +51,19 @@ class HistoryListActivity : AppCompatActivity() {
                         val historyEntries = snapshot.documents.map { document ->
                             HistoryEntryModel(
                                 pastListId = document.id,
-                                date = document.getString("date") ?: "Unknown Date"
+                                dateTime = "${document.getString("date") ?: "Unknown Date"} | ${document.getString("time") ?: "Unknown Time"}"
                             )
                         }
                         historyListAdapter = HistoryListAdapter(historyEntries)
-                        recyclerView.adapter = historyListAdapter
+                        viewBinding.recyclerViewHistory.adapter = historyListAdapter
+
+                        if (historyEntries.isEmpty()) {
+                            viewBinding.tvEmptyHistory.visibility = android.view.View.VISIBLE
+                            viewBinding.recyclerViewHistory.visibility = android.view.View.GONE
+                        } else {
+                            viewBinding.tvEmptyHistory.visibility = android.view.View.GONE
+                            viewBinding.recyclerViewHistory.visibility = android.view.View.VISIBLE
+                        }
                     }
                 }
                 .addOnFailureListener { e ->

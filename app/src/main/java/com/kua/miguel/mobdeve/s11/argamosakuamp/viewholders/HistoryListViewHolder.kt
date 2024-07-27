@@ -11,7 +11,7 @@ class HistoryListViewHolder(private val viewBinding: HistoryLayoutBinding) :
     RecyclerView.ViewHolder(viewBinding.root) {
 
     fun bind(entry: HistoryEntryModel) {
-        viewBinding.tvHistoryEntry.text = entry.date
+        viewBinding.tvHistoryEntry.text = entry.dateTime // Set the combined date and time
 
         // Set click listener for each history entry
         viewBinding.root.setOnClickListener {

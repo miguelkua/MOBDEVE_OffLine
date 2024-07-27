@@ -33,6 +33,7 @@ class AddEntryDialogFragment : DialogFragment() {
     private val viewBinding get() = _binding!!
 
     private val REQUEST_IMAGE_CAPTURE = 1
+    private val REQUEST_IMAGE_UPLOAD = 2
     private val REQUEST_CAMERA_PERMISSION = 100
     private var imageUri: Uri? = null
     private var croppedImageUri: Uri? = null
@@ -112,7 +113,7 @@ class AddEntryDialogFragment : DialogFragment() {
             }
         }
 
-        viewBinding.btnUploadImage.setOnClickListener {
+        viewBinding.btnCaptureImage.setOnClickListener {
             if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.CAMERA) ==
                 PackageManager.PERMISSION_GRANTED) {
                 if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
@@ -129,6 +130,12 @@ class AddEntryDialogFragment : DialogFragment() {
             } else {
                 requestPermissions(arrayOf(android.Manifest.permission.CAMERA), REQUEST_CAMERA_PERMISSION)
             }
+        }
+
+        viewBinding.btnUploadImage.setOnClickListener {
+            val intent = Intent(Intent.ACTION_GET_CONTENT)
+            intent.type = "image/*"
+            startActivityForResult(intent, REQUEST_IMAGE_UPLOAD)
         }
 
         viewBinding.btnCancel.setOnClickListener {
@@ -161,6 +168,13 @@ class AddEntryDialogFragment : DialogFragment() {
                 startCropActivity(imageUri!!)
             } else {
                 Toast.makeText(context, "Image capture failed", Toast.LENGTH_SHORT).show()
+            }
+        } else if (requestCode == REQUEST_IMAGE_UPLOAD && resultCode == Activity.RESULT_OK) {
+            imageUri = data?.data
+            if (imageUri != null) {
+                startCropActivity(imageUri!!)
+            } else {
+                Toast.makeText(context, "Image upload failed", Toast.LENGTH_SHORT).show()
             }
         } else if (requestCode == UCrop.REQUEST_CROP && resultCode == Activity.RESULT_OK) {
             croppedImageUri = UCrop.getOutput(data!!)

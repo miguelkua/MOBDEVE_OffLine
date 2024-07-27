@@ -93,10 +93,13 @@ class CheckoutActivity : AppCompatActivity() {
         val userId = auth.currentUser?.uid
         if (userId != null) {
             val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val timeFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
             val currentDate = dateFormat.format(Date())
+            val currentTime = timeFormat.format(Date())
 
             val pastListData = hashMapOf(
                 "date" to currentDate,
+                "time" to currentTime,
                 "items" to checkoutItems.map { item ->
                     hashMapOf(
                         "itemName" to item.productName,

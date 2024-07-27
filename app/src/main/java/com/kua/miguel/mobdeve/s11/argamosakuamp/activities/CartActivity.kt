@@ -1,6 +1,5 @@
 package com.kua.miguel.mobdeve.s11.argamosakuamp.activities
 
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
@@ -93,6 +92,21 @@ class CartActivity : AppCompatActivity() {
                         }
                         cartAdapter.notifyDataSetChanged()
                         updateTotalItems()
+
+                        // Show or hide empty cart message and headers
+                        if (cartItems.isEmpty()) {
+                            viewBinding.tvEmptyCart.visibility = android.view.View.VISIBLE
+                            viewBinding.tvCartHeader.visibility = android.view.View.VISIBLE
+                            viewBinding.recyclerViewCart.visibility = android.view.View.GONE
+                            viewBinding.llTotalItems.visibility = android.view.View.GONE
+                            viewBinding.btnCheckout.visibility = android.view.View.GONE
+                        } else {
+                            viewBinding.tvEmptyCart.visibility = android.view.View.GONE
+                            viewBinding.tvCartHeader.visibility = android.view.View.VISIBLE
+                            viewBinding.recyclerViewCart.visibility = android.view.View.VISIBLE
+                            viewBinding.llTotalItems.visibility = android.view.View.VISIBLE
+                            viewBinding.btnCheckout.visibility = android.view.View.VISIBLE
+                        }
                     }
                 }
         }
@@ -100,7 +114,7 @@ class CartActivity : AppCompatActivity() {
 
     private fun updateTotalItems() {
         val totalQuantity = cartItems.sumOf { it.productQuantity ?: 0 }
-        viewBinding.llTotalItems.text = "_________________________________\n\nTotal Items: $totalQuantity"
+        viewBinding.llTotalItems.text = "Total Items: $totalQuantity"
     }
 
     private fun navigateToList() {
@@ -141,5 +155,4 @@ class CartActivity : AppCompatActivity() {
             .create()
             .show()
     }
-
 }

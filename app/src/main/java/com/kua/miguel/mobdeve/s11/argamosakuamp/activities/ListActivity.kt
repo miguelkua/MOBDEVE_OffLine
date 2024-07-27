@@ -109,6 +109,15 @@ class ListActivity : AppCompatActivity(), AddEntryDialogFragment.AddEntryListene
                             data.add(entry)
                         }
                         listAdapter.notifyDataSetChanged()
+
+                        // Show or hide empty list message
+                        if (data.isEmpty()) {
+                            viewBinding.tvEmptyList.visibility = android.view.View.VISIBLE
+                            recyclerView.visibility = android.view.View.GONE
+                        } else {
+                            viewBinding.tvEmptyList.visibility = android.view.View.GONE
+                            recyclerView.visibility = android.view.View.VISIBLE
+                        }
                     }
                 }
         }
