@@ -105,7 +105,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1"
-                android:backgroundTint="#8BC34A"
+                android:backgroundTint="#FF9800"
                 android:text="Capture Image"
                 android:textColor="@android:color/white" />
 
@@ -115,7 +115,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:layout_weight="1"
-                android:backgroundTint="#8BC34A"
+                android:backgroundTint="#FF9800"
                 android:text="Upload Image"
                 android:textColor="@android:color/white" />
         </LinearLayout>
@@ -133,7 +133,7 @@
                 android:layout_marginEnd="8dp"
                 android:layout_weight="1"
                 android:text="Cancel"
-                app:backgroundTint="#8BC34A" />
+                app:backgroundTint="#FF0000" />
 
             <Button
                 android:id="@+id/btnEditEntry"
