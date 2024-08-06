@@ -2,6 +2,7 @@ package com.kua.miguel.mobdeve.s11.argamosakuamp.activities
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.InputType
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import com.google.firebase.auth.FirebaseAuth
@@ -11,6 +12,7 @@ class LoginActivity : ComponentActivity() {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private lateinit var viewBinding: ActivityLoginBinding
+    private var isPasswordVisible = false
 
     private val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
         val user = firebaseAuth.currentUser
@@ -38,6 +40,10 @@ class LoginActivity : ComponentActivity() {
 
         viewBinding.btnLogin.setOnClickListener {
             loginUser(viewBinding.etEmail.text.toString(), viewBinding.etPassword.text.toString())
+        }
+
+        viewBinding.tvShowPassword.setOnClickListener {
+            togglePasswordVisibility()
         }
     }
 
@@ -93,6 +99,18 @@ class LoginActivity : ComponentActivity() {
                     Toast.makeText(this, "Login failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
                 }
             }
+    }
+
+    private fun togglePasswordVisibility() {
+        if (isPasswordVisible) {
+            viewBinding.etPassword.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            viewBinding.tvShowPassword.text = "Show"
+        } else {
+            viewBinding.etPassword.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            viewBinding.tvShowPassword.text = "Hide"
+        }
+        viewBinding.etPassword.setSelection(viewBinding.etPassword.text.length)
+        isPasswordVisible = !isPasswordVisible
     }
 
 }
